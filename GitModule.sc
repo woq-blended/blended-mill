@@ -18,7 +18,7 @@ trait GitModule extends Module {
    *
    * @return A tuple of (the latest tag, the calculated version string)
    */
-  def publishVersion: T[(String, String)] = T.input {
+  def calculateVersion: T[(String, String)] = T.input {
     val tag =
       try Option(
         os.proc('git, 'describe, "--exact-match", "--tags", "--always", gitHead()).call(cwd = millSourcePath).out.trim
@@ -42,5 +42,18 @@ trait GitModule extends Module {
 
         (latestTaggedVersion, s"$latestTaggedVersion-$commitsSinceLastTag-${gitHead().take(6)}$dirtySuffix")
     }
+  }
+
+  def publishVersion: T[String] = T.input {
+    val v = T.env.get("CI") match {
+      case Some(ci @ ("1" | "true")) =>
+        val version = calculateVersion()._2
+        T.log.info(s"Using git-based version: ${version} (CI=${ci})")
+        version
+      case _ => os.read(millSourcePath / "version.txt").trim()
+    }
+    val path = T.dest / "version.txt"
+    os.write(path, v)
+    v
   }
 }

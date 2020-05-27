@@ -3,9 +3,6 @@ import mill.define.Target
 import mill.scalalib._
 import os.Path
 
-//import $file.build_publish
-//import build_publish.BlendedPublishModule
-
 import $file.GitModule
 import GitModule.GitModule
 
@@ -29,18 +26,7 @@ object GitSupport extends GitModule {
   override def millSourcePath: os.Path = baseDir
 }
 
-def pluginVersion = T.input {
-  val v = T.env.get("CI") match {
-    case Some(ci @ ("1" | "true")) =>
-      val version = GitSupport.publishVersion()._2
-      T.log.info(s"Using git-based version: ${version} (CI=${ci})")
-      version
-    case _ => os.read(baseDir / "version.txt").trim()
-  }
-  val path = T.dest / "version.txt"
-  os.write(path, v)
-  v
-}
+def pluginVersion: T[String] = T { GitSupport.publishVersion() }
 
 trait PluginModule extends ScalaModule with BlendedPublishModule {
 
