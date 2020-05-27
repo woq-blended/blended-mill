@@ -1,5 +1,7 @@
 import mill._
 
+import scala.util.control.NonFatal
+
 trait GitModule extends Module {
 
   /**
@@ -22,7 +24,7 @@ trait GitModule extends Module {
         os.proc('git, 'describe, "--exact-match", "--tags", "--always", gitHead()).call(cwd = millSourcePath).out.trim
       )
       catch {
-        case e => None
+        case NonFatal(e) => None
       }
 
     val dirtySuffix = os.proc('git, 'diff).call().out.string.trim() match {

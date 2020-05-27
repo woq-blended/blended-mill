@@ -1,11 +1,16 @@
 import mill._
+import mill.define.Target
 import mill.scalalib._
+import os.Path
 
 //import $file.build_publish
 //import build_publish.BlendedPublishModule
 
 import $file.GitModule
 import GitModule.GitModule
+
+import $file.BlendedPublish
+import BlendedPublish.BlendedPublishModule
 
 val baseDir : os.Path = build.millSourcePath
 
@@ -37,13 +42,45 @@ def pluginVersion = T.input {
   v
 }
 
-object plugin extends ScalaModule {
+trait PluginModule extends ScalaModule with BlendedPublishModule {
 
-  override def scalaVersion : T[String] = "2.13.2"
-  override def millSourcePath : os.Path = baseDir / "webtools"
+  /**
+   * Sources to cop into the plugin itself. The right hand side of the Map
+   * indicates the target package.
+   */
+  def pluginSources : Map[String, String] = Map(
+    "GitModule" -> "blended.mill.versioning",
+    "BlendedPublish" -> "blended.mill.publish"
+  )
 
-  override def ivyDeps = T { super.ivyDeps() ++ Agg(
-    Deps_0_7.millMain,
-    Deps_0_7.millScalalib
-  )}
+  override def publishVersion: T[String] = T { pluginVersion() }
+
+  override def description : String = "A collection of utilities for building blended projects with mill"
+
+  override def generatedSources: Target[Seq[PathRef]] = T {
+
+    val dir = T.dest
+    pluginSources.foreach { case (f, p) =>
+      val content : String = os.read(baseDir / s"$f.sc")
+
+      val t : Path = T.dest / s"$f.scala"
+      os.write(t, s"package $p\n\n$content")
+    }
+
+    super.generatedSources() ++ Seq(PathRef(dir))
+  }
 }
+
+object blended extends Module {
+  object mill extends PluginModule {
+
+    override def scalaVersion : T[String] = "2.13.2"
+    override def millSourcePath : os.Path = baseDir
+
+    override def ivyDeps = T { super.ivyDeps() ++ Agg(
+      Deps_0_7.millMain,
+      Deps_0_7.millScalalib
+    )}
+  }
+}
+
