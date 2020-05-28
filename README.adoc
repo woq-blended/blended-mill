@@ -1,0 +1,3 @@
+= blended-mill - Some helper modules to build blended projects with Mill build tool
+
+Mill utility collection for working with blended 
