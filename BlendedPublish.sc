@@ -83,6 +83,7 @@ trait BlendedPublishModule extends PublishModule {
         )
 
       // Todo: Sign all files and digest
+      files.foreach(_ => ())
 
       os.write(keyFile, scpKey().replaceAll("\\$", "\n"), perms = "rw-------")
       os.write(knownHosts, s"$scpHost ssh-rsa ${scpHostKey()}")

@@ -30,13 +30,39 @@ def pluginVersion: T[String] = T { GitSupport.publishVersion() }
 
 trait PluginModule extends ScalaModule with BlendedPublishModule {
 
+  def basePackage : String = "de.wayofquality.blended.mill"
   /**
    * Sources to cop into the plugin itself. The right hand side of the Map
    * indicates the target package.
    */
   def pluginSources : Map[String, String] = Map(
-    "GitModule" -> "blended.mill.versioning",
-    "BlendedPublish" -> "blended.mill.publish"
+    "GitModule" -> "versioning",
+    "BlendedPublish" -> "publish"
+  )
+
+  override def scalacOptions = Seq(
+    "--deprecation",
+    "--target:8",
+    "-Werror",
+    "--feature",
+    Seq(
+      "adapted-args",
+      "constant",
+      "deprecation",
+      "doc-detached",
+      "inaccessible",
+      "infer-any",
+      "missing-interpolator",
+      "nullary-override",
+      "nullary-unit",
+      "option-implicit",
+      "poly-implicit-overload",
+      "stars-align",
+      // Compiler doesn't know it but suggests it: "Recompile with -Xlint:unchecked for details."
+      // "unchecked",
+      "unused",
+    ).mkString("-Xlint:", ",", ""),
+    //    "--unchecked"
   )
 
   override def publishVersion: T[String] = T { pluginVersion() }
@@ -50,7 +76,7 @@ trait PluginModule extends ScalaModule with BlendedPublishModule {
       val content : String = os.read(baseDir / s"$f.sc")
 
       val t : Path = T.dest / s"$f.scala"
-      os.write(t, s"package $p\n\n$content")
+      os.write(t, s"package $basePackage.$p\n\n$content")
     }
 
     super.generatedSources() ++ Seq(PathRef(dir))

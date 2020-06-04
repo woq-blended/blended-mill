@@ -1,4 +1,4 @@
-package blended.mill.utils
+package de.wayofquality.blended.mill.utils
 
 import mill.api.Ctx
 import os._

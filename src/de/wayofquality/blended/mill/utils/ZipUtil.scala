@@ -1,4 +1,4 @@
-package blended.mill.utils
+package de.wayofquality.blended.mill.utils
 
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
@@ -26,7 +26,7 @@ trait ZipUtil {
       for{
         p <- inputPaths
         (file, mapping) <-
-          if (os.isFile(p)) Iterator(p -> os.rel / p.last)
+          if (os.isFile(p)) IndexedSeq(p -> os.rel / p.last)
           else os.walk(p).filter(p => includeDirs || os.isFile(p)).map(sub => sub -> sub.relativeTo(p)).sorted
         if !seen(mapping) // && fileFilter(p, mapping)
       } {
