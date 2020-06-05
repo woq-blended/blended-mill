@@ -12,11 +12,11 @@ trait BlendedPublishModule extends PublishModule {
   def description: String
 
   def scpHost : String = "u233308.your-storagebox.de"
-  def scpTargetDir : String = "/blended-mill"
+
+  def scpTargetDir : String
 
   def githubOwner : String = "woq-blended"
-  def githubRepo : String = "blended-mill"
-
+  def githubRepo : String
   def organization : String = "de.wayofquality.blended"
 
   def developers : Seq[Developer] = Seq(
@@ -50,7 +50,6 @@ trait BlendedPublishModule extends PublishModule {
         sys.exit(1)
     }
   }
-
 
   override def pomSettings: T[PomSettings] = T {
     PomSettings(

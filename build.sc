@@ -12,14 +12,23 @@ import BlendedPublish.BlendedPublishModule
 val baseDir : os.Path = build.millSourcePath
 
 trait Deps {
-  def millVersion : String
+  def millVersion: String
+  def millOsgiVersion : String
+  def scalafixVersion : String
 
   def millMain = ivy"com.lihaoyi::mill-main:${millVersion}"
   def millScalalib = ivy"com.lihaoyi::mill-scalalib:${millVersion}"
+  def millScoverage = ivy"com.lihaoyi::mill-contrib-scoverage:${millVersion}"
+  def millScalafix = ivy"com.goyeau::mill-scalafix:${scalafixVersion}"
+
+  def millOsgi = ivy"de.tototec::de.tobiasroeser.mill.osgi:$millOsgiVersion"
 }
 
 object Deps_0_7 extends Deps {
   override def millVersion = "0.7.3"
+  override def millOsgiVersion = "0.3.0"
+
+  override def scalafixVersion: String = "0.1.1"
 }
 
 object GitSupport extends GitModule {
@@ -29,6 +38,9 @@ object GitSupport extends GitModule {
 def pluginVersion: T[String] = T { GitSupport.publishVersion() }
 
 trait PluginModule extends ScalaModule with BlendedPublishModule {
+
+  override def githubRepo : String = "blended-mill"
+  override def scpTargetDir : String = "/blended-mill"
 
   def basePackage : String = "de.wayofquality.blended.mill"
   /**
@@ -95,7 +107,10 @@ object blended extends Module {
 
     override def ivyDeps = T { super.ivyDeps() ++ Agg(
       Deps_0_7.millMain,
-      Deps_0_7.millScalalib
+      Deps_0_7.millScalalib,
+      Deps_0_7.millScoverage,
+      Deps_0_7.millScalafix,
+      Deps_0_7.millOsgi
     )}
   }
 }
