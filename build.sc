@@ -65,6 +65,10 @@ trait PluginModule extends ScalaModule with BlendedPublishModule {
     //    "--unchecked"
   )
 
+  override def scalaDocOptions: Target[Seq[String]] = T {
+    scalacOptions().filter(_ != "-Werror")
+  }
+
   override def publishVersion: T[String] = T { pluginVersion() }
 
   override def description : String = "A collection of utilities for building blended projects with mill"
