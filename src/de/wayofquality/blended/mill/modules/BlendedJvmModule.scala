@@ -39,10 +39,12 @@ trait BlendedJvmModule extends BlendedBaseModule { jvmBase : BlendedPublishModul
     override def artifactName: T[String] = jvmBase.artifactName
     trait BlendedJsTests extends super.Tests {
       override def sources: Sources = T.sources(
-        jsBase.millSourcePath / "src" / "test" / "scala"
+        jsBase.millSourcePath / "src" / "test" / "scala",
+        jsBase.millSourcePath / os.up / "shared" / "src" / "test" / "scala"
       )
       override def ivyDeps = T{ super.ivyDeps() ++ Agg(
-        deps.js.scalatest
+        deps.js.scalatest,
+        deps.js.scalatestplusScalacheck
       )}
       override def testFrameworks = Seq("org.scalatest.tools.Framework")
       override def moduleKind: T[ModuleKind] = T{ ModuleKind.CommonJSModule }
