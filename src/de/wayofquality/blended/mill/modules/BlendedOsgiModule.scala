@@ -4,7 +4,7 @@ import de.tobiasroeser.mill.osgi.{OsgiBundleModule, OsgiHeaders}
 import de.wayofquality.blended.mill.publish.BlendedPublishModule
 import mill._
 
-trait BlendedOsgiModule extends OsgiBundleModule with BlendedBaseModule with BlendedPublishModule {
+trait BlendedOsgiModule extends OsgiBundleModule { this : BlendedBaseModule with BlendedPublishModule =>
 
   override def bundleSymbolicName = blendedModule
 

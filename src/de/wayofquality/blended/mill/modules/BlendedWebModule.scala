@@ -6,7 +6,7 @@ import mill.scalalib.Dep
 import mill.define.{Sources, Target}
 import de.wayofquality.blended.mill.publish.BlendedPublishModule
 
-trait BlendedWebModule extends BlendedOsgiModule { m : BlendedPublishModule =>
+trait BlendedWebModule extends BlendedBaseModule with BlendedOsgiModule { m : BlendedPublishModule =>
 
   def blendedCoreVersion : String
 
