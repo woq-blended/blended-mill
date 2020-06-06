@@ -7,20 +7,17 @@ import mill.define.{Command, Sources, Target}
 import mill.scalalib.{Dep, JavaModule, Lib, SbtModule, TestRunner}
 import mill.scalalib.api.CompilationResult
 import sbt.testing.{Fingerprint, Framework}
-import de.tobiasroeser.mill.osgi._
 import mill.contrib.scoverage.ScoverageModule
 
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 
 trait BlendedBaseModule
   extends SbtModule
-//    with BlendedCoursierModule
-//    with CorePublishModule
-    with OsgiBundleModule
-    with ScoverageModule
-    with ScalafixModule { blendedModuleBase =>
+  with ScoverageModule
+  with ScalafixModule { blendedModuleBase =>
 
-  def deps: BlendedDependencies
+  type ProjectDeps <: BlendedDependencies
+  def deps : ProjectDeps
   def baseDir : os.Path
 
   /** The blended module name. */
@@ -31,23 +28,12 @@ trait BlendedBaseModule
 
   def exportPackages: Seq[String] = Seq(blendedModule)
   def essentialImportPackage: Seq[String] = Seq()
-  override def osgiHeaders: T[OsgiHeaders] = T{
-    super.osgiHeaders().copy(
-      `Export-Package` = exportPackages,
-      `Import-Package` =
-        // scala compatible binary version control
-        Seq(s"""scala.*;version="[${scalaBinVersion()}.0,${scalaBinVersion()}.50]"""") ++
-          essentialImportPackage ++
-          Seq("*")
-    )
-  }
 
   override def millSourcePath: os.Path = baseDir / blendedModule
 
   override def resources = T.sources { super.resources() ++ Seq(
     PathRef(millSourcePath / "src" / "main" / "binaryResources")
   )}
-  override def bundleSymbolicName = blendedModule
 
   override def scalacOptions = Seq(
     "--deprecation",
@@ -92,14 +78,14 @@ trait BlendedBaseModule
   }
 
   override val scoverage: BlendedScoverageData = new BlendedScoverageData(implicitly)
-  class BlendedScoverageData(ctx0: mill.define.Ctx) extends super.ScoverageData(ctx0) with OsgiBundleModule {
-    // we ensure, out scoverage enhancer is also a valid OSGi module to drop-in replace it in all tests
-    override def bundleSymbolicName: T[String] = T{ blendedModuleBase.bundleSymbolicName() }
-    override def bundleVersion: T[String] = T{ blendedModuleBase.bundleVersion() }
-    override def osgiHeaders: T[OsgiHeaders] = T{ blendedModuleBase.osgiHeaders() }
-    override def reproducibleBundle: T[Boolean] = T{ blendedModuleBase.reproducibleBundle() }
-    override def embeddedJars: T[Seq[PathRef]] = T{ blendedModuleBase.embeddedJars() }
-    override def explodedJars: T[Seq[PathRef]] = T{ blendedModuleBase.explodedJars() }
+  class BlendedScoverageData(ctx0: mill.define.Ctx) extends super.ScoverageData(ctx0) with JavaModule {
+//    // we ensure, out scoverage enhancer is also a valid OSGi module to drop-in replace it in all tests
+//    override def bundleSymbolicName: T[String] = T{ blendedModuleBase.bundleSymbolicName() }
+//    override def bundleVersion: T[String] = T{ blendedModuleBase.bundleVersion() }
+//    override def osgiHeaders: T[OsgiHeaders] = T{ blendedModuleBase.osgiHeaders() }
+//    override def reproducibleBundle: T[Boolean] = T{ blendedModuleBase.reproducibleBundle() }
+//    override def embeddedJars: T[Seq[PathRef]] = T{ blendedModuleBase.embeddedJars() }
+//    override def explodedJars: T[Seq[PathRef]] = T{ blendedModuleBase.explodedJars() }
     override def moduleDeps: Seq[JavaModule] = blendedModuleBase.moduleDeps.map(mapToScoverageModule)
     override def recursiveModuleDeps: Seq[JavaModule] = blendedModuleBase.recursiveModuleDeps.map(mapToScoverageModule)
   }

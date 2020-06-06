@@ -24,6 +24,8 @@ trait BlendedDependencies { deps =>
   def sprayVersion = "1.3.5"
   def springVersion = "4.3.12.RELEASE_1"
 
+  def blendedDep(version : String)(module : String) = ivy"de.wayofquality.blended::blended.$module:$version"
+
   def activeMqBroker = ivy"org.apache.activemq:activemq-broker:${activeMqVersion}"
   def activeMqClient = ivy"org.apache.activemq:activemq-client:${activeMqVersion}"
   def activeMqKahadbStore = ivy"org.apache.activemq:activemq-kahadb-store:${activeMqVersion}"

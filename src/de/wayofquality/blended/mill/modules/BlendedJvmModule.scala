@@ -16,7 +16,7 @@ trait BlendedJvmModule extends BlendedBaseModule { jvmBase : BlendedPublishModul
     PathRef(millSourcePath / os.up / "shared" / "src" / "main" / "binaryResources")
   )}
 
-  trait CoreJvmTests extends super.BlendedTests {
+  trait BlendedJvmTests extends super.BlendedTests {
     override def sources = T.sources {
       super.sources() ++ Seq(PathRef(jvmBase.millSourcePath / os.up / "shared" / "src" / "test" / "scala"))
     }
@@ -37,7 +37,7 @@ trait BlendedJvmModule extends BlendedBaseModule { jvmBase : BlendedPublishModul
     override def moduleKind: T[ModuleKind] = T{ ModuleKind.CommonJSModule }
     def blendedModule = jvmBase.blendedModule
     override def artifactName: T[String] = jvmBase.artifactName
-    trait CoreJsTests extends super.Tests {
+    trait BlendedJsTests extends super.Tests {
       override def sources: Sources = T.sources(
         jsBase.millSourcePath / "src" / "test" / "scala"
       )
