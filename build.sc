@@ -18,6 +18,7 @@ trait Deps {
 
   def millMain = ivy"com.lihaoyi::mill-main:${millVersion}"
   def millScalalib = ivy"com.lihaoyi::mill-scalalib:${millVersion}"
+  def millScalaJsLib = ivy"com.lihaoyi::mill-scalajslib:${millVersion}"
   def millScoverage = ivy"com.lihaoyi::mill-contrib-scoverage:${millVersion}"
   def millScalafix = ivy"com.goyeau::mill-scalafix:${scalafixVersion}"
 
@@ -108,6 +109,7 @@ object blended extends Module {
     override def ivyDeps = T { super.ivyDeps() ++ Agg(
       Deps_0_7.millMain,
       Deps_0_7.millScalalib,
+      Deps_0_7.millScalaJsLib,
       Deps_0_7.millScoverage,
       Deps_0_7.millScalafix,
       Deps_0_7.millOsgi
