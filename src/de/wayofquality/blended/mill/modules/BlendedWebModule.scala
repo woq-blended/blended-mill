@@ -43,6 +43,7 @@ trait BlendedWebModule extends BlendedBaseModule with BlendedOsgiModule { m : Bl
   override def osgiHeaders = T {
     val scalaBinVersion = scalaVersion().split("[.]").take(2).mkString(".")
     super.osgiHeaders().copy(
+      `Export-Package` = Seq.empty,
       `Import-Package` =
         Seq(s"""scala.*;version="[${scalaBinVersion}.0,${scalaBinVersion}.50]"""") ++
           Seq("*"),

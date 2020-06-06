@@ -156,12 +156,13 @@ trait BlendedDependencies { deps =>
   def commonsLogging = ivy"commons-logging:commons-logging:1.2"
   def jsonSimple = ivy"com.googlecode.json-simple:json-simple:1.1.1"
 
+  def toJs(dep: Dep) = {
+    val base = dep.dep
+    ivy"${base.module.organization.value}::${base.module.name.value}::${base.version}"
+  }
+
   object js {
     /** Convert a scala dependency into a scala.js dependency */
-    protected def toJs(dep: Dep) = {
-      val base = dep.dep
-      ivy"${base.module.organization.value}::${base.module.name.value}::${base.version}"
-    }
     def prickle = toJs(deps.prickle)
     def scalatest = toJs(deps.scalatest)
     def scalacheck = toJs(deps.scalacheck)
