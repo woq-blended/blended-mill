@@ -37,7 +37,7 @@ trait WebTools extends Module {
     yarnInstall()
 
     val process = Jvm.spawnSubprocess(
-      commandArgs = Seq(
+      commandArgs = Seq("node",
         (npmModulesDir/ "webpack-cli" / "bin" / "cli.js").toIO.getAbsolutePath(),
         "--output-path", out.toIO.getAbsolutePath(),
         "--config", prepareWebPackConfig().path.toIO.getAbsolutePath()
