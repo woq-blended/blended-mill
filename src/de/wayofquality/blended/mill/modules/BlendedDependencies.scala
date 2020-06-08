@@ -6,9 +6,8 @@ trait BlendedDependencies { deps =>
 
   // Versions
   def activeMqVersion = "5.15.6"
-  def akkaVersion = "2.5.26"
-  def akkaHttpVersion = "10.1.11"
-  def camelVersion = "2.19.5"
+  def akkaVersion = "2.6.6"
+  def akkaHttpVersion = "10.1.12"
   def dominoVersion = "1.1.5"
   def jettyVersion = "9.4.28.v20200408"
   def jolokiaVersion = "1.6.2"
@@ -36,7 +35,6 @@ trait BlendedDependencies { deps =>
   protected def akkaHttpModule(m: String) = ivy"com.typesafe.akka::akka-${m}:${akkaHttpVersion}"
 
   def akkaActor = akka("actor")
-  def akkaCamel = akka("camel")
   def akkaHttp = akkaHttpModule("http")
   def akkaHttpCore = akkaHttpModule("http-core")
   def akkaHttpTestkit = akkaHttpModule("http-testkit")

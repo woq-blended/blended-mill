@@ -21,7 +21,7 @@ trait BlendedBaseModule
   def baseDir : os.Path
 
   /** The blended module name. */
-  def blendedModule: String = millModuleSegments.parts.mkString(".")
+  def blendedModule: String = millModuleSegments.parts.filterNot(_ == deps.scalaVersion).mkString(".")
   override def artifactName: T[String] = blendedModule
 
   def scalaBinVersion = T { scalaVersion().split("[.]").take(2).mkString(".") }
