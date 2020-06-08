@@ -21,7 +21,7 @@ trait GitModule extends Module {
   def calculateVersion: T[(String, String)] = T.input {
     val tag =
       try Option(
-        os.proc("git", "describe", "--exact-match", "--tags", "--always", gitHead()).call(cwd = millSourcePath).out.trim
+        os.proc("git", "describe", "--tags", "--always", gitHead()).call(cwd = millSourcePath).out.trim
       )
       catch {
         case NonFatal(e) => None
