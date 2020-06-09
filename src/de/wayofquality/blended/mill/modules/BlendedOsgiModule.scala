@@ -6,7 +6,7 @@ import mill._
 
 trait BlendedOsgiModule extends OsgiBundleModule { this : BlendedBaseModule with BlendedPublishModule =>
 
-  override def bundleSymbolicName = blendedModule
+  override def bundleSymbolicName = T { blendedModule + "_" + scalaBinVersion()}
 
   override def osgiHeaders: T[OsgiHeaders] = T{
     super.osgiHeaders().copy(

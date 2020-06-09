@@ -104,7 +104,7 @@ trait BlendedDependencies { deps =>
 
   def orgOsgi = ivy"org.osgi:org.osgi.core:6.0.0"
   def orgOsgiCompendium = ivy"org.osgi:org.osgi.compendium:5.0.0"
-  def osLib = ivy"com.lihaoyi::os-lib:0.4.2"
+  def osLib = ivy"com.lihaoyi::os-lib:0.6.3"
 
   def parboiledCore = ivy"org.parboiled:parboiled-core:${parboiledVersion}"
   def parboiledScala = ivy"org.parboiled::parboiled-scala:${parboiledVersion}"
