@@ -106,13 +106,15 @@ object blended extends Module {
     override def scalaVersion : T[String] = "2.13.2"
     override def millSourcePath : os.Path = baseDir
 
+    val deps = Deps_0_7
+
     override def ivyDeps = T { super.ivyDeps() ++ Agg(
-      Deps_0_7.millMain,
-      Deps_0_7.millScalalib,
-      Deps_0_7.millScalaJsLib,
-      Deps_0_7.millScoverage,
-      Deps_0_7.millScalafix,
-      Deps_0_7.millOsgi
+      deps.millMain,
+      deps.millScalalib,
+      deps.millScalaJsLib,
+      deps.millScoverage,
+      deps.millScalafix,
+      deps.millOsgi
     )}
   }
 }
