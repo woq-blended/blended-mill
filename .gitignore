@@ -3,4 +3,5 @@ out/
 .idea_modules/
 .metals/
 .bloop/
+.bsp/
 

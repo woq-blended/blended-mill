@@ -1,13 +1,19 @@
 package de.wayofquality.blended.mill.modules
 
+import coursier.Dependency
+import coursier.core.Organization
 import mill.scalalib._
 
 trait BlendedDependencies { deps =>
 
+  def blendedOrg : String = "de.wayofquality.blended"
+
   // Versions
   def activeMqVersion = "5.15.6"
+
   def akkaVersion = "2.6.6"
   def akkaHttpVersion = "10.1.12"
+
   def dominoVersion = "1.1.5"
   def jettyVersion = "9.4.28.v20200408"
   def jolokiaVersion = "1.6.2"
@@ -23,7 +29,7 @@ trait BlendedDependencies { deps =>
   def sprayVersion = "1.3.5"
   def springVersion = "4.3.12.RELEASE_1"
 
-  def blendedDep(version : String)(module : String) = ivy"de.wayofquality.blended::blended.$module:$version"
+  def blendedDep(version : String)(module : String) = ivy"$blendedOrg::blended.$module:$version"
 
   def activeMqBroker = ivy"org.apache.activemq:activemq-broker:${activeMqVersion}"
   def activeMqClient = ivy"org.apache.activemq:activemq-client:${activeMqVersion}"
@@ -31,20 +37,26 @@ trait BlendedDependencies { deps =>
   def activeMqSpring = ivy"org.apache.activemq:activemq-spring:${activeMqVersion}"
 
   protected def akka(m: String) = ivy"com.typesafe.akka::akka-${m}:${akkaVersion}"
-
   protected def akkaHttpModule(m: String) = ivy"com.typesafe.akka::akka-${m}:${akkaHttpVersion}"
 
-  def akkaActor = akka("actor")
-  def akkaHttp = akkaHttpModule("http")
-  def akkaHttpCore = akkaHttpModule("http-core")
+  // Convenient method to derive the coordinates for a given Akka or Akka Http jar that has been
+  // wrapped by https://github.com/woq-blended/akka-osgi
+  def toAkkaBundle(d : Dep)(akkaBundleRevision : String) : Dep = {
+    val newMod = d.dep.module.withOrganization(Organization(blendedOrg))
+    val newDep : Dependency = d.dep.withVersion(d.dep.version + "." + akkaBundleRevision).withModule(newMod)
+    d.copy(dep = newDep)
+  }
+
+  def akkaActor : String => Dep = toAkkaBundle(akka("actor"))
+  def akkaHttp : String => Dep = toAkkaBundle(akkaHttpModule("http"))
+  def akkaHttpCore : String => Dep = toAkkaBundle(akkaHttpModule("http-core"))
+  def akkaParsing : String => Dep = toAkkaBundle(akkaHttpModule("parsing"))
+  def akkaStream : String => Dep = toAkkaBundle(akka("stream"))
+  def akkaSlf4j : String => Dep = toAkkaBundle(akka("slf4j"))
+
   def akkaHttpTestkit = akkaHttpModule("http-testkit")
-  def akkaOsgi = akka("osgi")
-  def akkaParsing = akkaHttpModule("parsing")
-  def akkaPersistence = akka("persistence")
-  def akkaStream = akka("stream")
   def akkaStreamTestkit = akka("stream-testkit")
   def akkaTestkit = akka("testkit")
-  def akkaSlf4j = akka("slf4j")
 
   def asciiRender = ivy"com.indvd00m.ascii.render:ascii-render:1.2.3"
 
