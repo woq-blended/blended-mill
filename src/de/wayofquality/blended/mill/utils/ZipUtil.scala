@@ -3,17 +3,16 @@ package de.wayofquality.blended.mill.utils
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 
-import os.{Path, RelPath}
+import os.Path
 
 trait ZipUtil {
 
   def createZip(outputPath: os.Path,
-    inputPaths: Seq[Path],
-    explicitEntries: Seq[(RelPath, Path)] = Seq(),
-    //                fileFilter: (os.Path, os.RelPath) => Boolean = (p: os.Path, r: os.RelPath) => true,
-    prefix: String = "",
-    timestamp: Option[Long] = None,
-    includeDirs: Boolean = false): Unit = {
+                inputPaths: Seq[Path],
+                fileFilter: (os.Path, os.RelPath) => Boolean = (p: os.Path, r: os.RelPath) => true,
+                prefix: String = "",
+                timestamp: Option[Long] = None,
+                includeDirs: Boolean = false): Unit = {
     import java.util.zip.ZipOutputStream
     import scala.collection.mutable
 
@@ -26,16 +25,18 @@ trait ZipUtil {
       for{
         p <- inputPaths
         (file, mapping) <-
-          if (os.isFile(p)) IndexedSeq(p -> os.rel / p.last)
-          else os.walk(p).filter(p => includeDirs || os.isFile(p)).map(sub => sub -> sub.relativeTo(p)).sorted
-        if !seen(mapping) // && fileFilter(p, mapping)
+          (if (os.isFile(p)) Iterator(p -> os.rel / p.last)
+           else os.walk(p).iterator.withFilter(_ => includeDirs).map(sub => sub -> sub.relativeTo(p)))
+        if !seen(mapping) && fileFilter(p, mapping)
       } {
-        seen.add(mapping)
-        val entry = new ZipEntry(prefix + mapping.toString)
-        entry.setTime(timestamp.getOrElse(os.mtime(file)))
-        zip.putNextEntry(entry)
-        if(os.isFile(file)) zip.write(os.read.bytes(file))
-        zip.closeEntry()
+        if (os.isFile(file)) {
+          seen.add(mapping)
+          val entry = new ZipEntry(prefix + mapping.toString)
+          entry.setTime(timestamp.getOrElse(os.mtime(file)))
+          zip.putNextEntry(entry)
+          if(os.isFile(file)) zip.write(os.read.bytes(file))
+          zip.closeEntry()
+        }
       }
     } finally {
       zip.close()

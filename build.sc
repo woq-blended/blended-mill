@@ -1,4 +1,4 @@
-import $ivy.`com.lihaoyi::mill-contrib-bsp:$MILL_VERSION`
+import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
 
 import mill._
 import mill.define.Target

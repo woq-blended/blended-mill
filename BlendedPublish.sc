@@ -13,7 +13,7 @@ trait BlendedPublishModule extends PublishModule {
 
   def scpHost : String = "u233308.your-storagebox.de"
 
-  def scpTargetDir : String
+  def scpTargetDir : String = githubRepo
 
   def githubOwner : String = "woq-blended"
   def githubRepo : String
