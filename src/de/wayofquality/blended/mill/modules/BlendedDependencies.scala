@@ -198,6 +198,7 @@ trait BlendedDependencies { deps =>
 
   def scalacheck = ivy"org.scalacheck::scalacheck:1.14.3"
   def scalatest = ivy"org.scalatest::scalatest:${scalatestVersion}"
+  def scalactic = ivy"org.scalactic::scalactic:${scalatestVersion}"
   def scalatestplusScalacheck = ivy"org.scalatestplus::scalacheck-1-14:3.1.1.1"
   def scalatestplusMockito = ivy"org.scalatestplus::mockito-1-10:3.1.0.0"
   def shapeless = ivy"com.chuusai::shapeless:1.2.4"
@@ -223,7 +224,7 @@ trait BlendedDependencies { deps =>
   def sttpAkka = ivy"com.softwaremill.sttp.client::akka-http-backend:2.0.6"
 
   def typesafeConfig = ivy"com.typesafe:config:1.4.0"
-  def typesafeSslConfigCore = ivy"com.typesafe::ssl-config-core:0.4.0"
+  def typesafeSslConfigCore = ivy"com.typesafe::ssl-config-core:0.4.2"
 
   // libs for splunk support via HEC
   def splunkjava = ivy"com.splunk.logging:splunk-library-javalogging:1.7.3"
