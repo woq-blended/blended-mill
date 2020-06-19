@@ -27,7 +27,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
    * The artifact map is a map from maven gavs to actual files. Typically all dependencies
    * that come from features are resolved by mill via coursier. In this list we keep track
    * of gav's to the absolute path of the associated file, so that we can pass this information
-   * to blended's RuntimeConfigBuilder.
+   * to blended's ProfileBuilder.
    */
   def artifactMap : T[Map[String, String]] = T {
 
@@ -47,7 +47,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
           ) match {
             case mill.api.Result.Success(r) =>
               if (r.iterator.isEmpty) {
-                // TODO: This will appear in the log, but won't break the build. The RuntimeConfigBuilder
+                // TODO: This will appear in the log, but won't break the build. The ProfileBuilder
                 // will try to download that file itself.
                 // This happens i.e. when dependencies are not "jar"s
                 T.log.error(s"No artifact found for [$gav]")
@@ -127,7 +127,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
   }
 
   /**
-   * Generate a profile conf that can be fed into RuntimeConfigBuilder. This will take the
+   * Generate a profile conf that can be fed into ProfileBuilder. This will take the
    * filtered profile.conf from the sourcce files and append the configuration for the
    * container resource archive and the feature definitions.
    */
@@ -154,7 +154,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
 
   /**
    * Return a sequence of all feature files used in this container. These files will be handed over
-   * to the RuntimeConfigBuilder.
+   * to the ProfileBuilder.
    */
   def featureFiles : T[Seq[String]] = T.traverse(featureModuleDeps)(fd =>
     T.task { fd.featureConf() }
@@ -163,7 +163,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
   /**
    * The class we need to run to materialze the profile.
    */
-  def runtimeConfigBuilderClass : String = "blended.updater.tools.configbuilder.RuntimeConfigBuilder"
+  def profileBuilderClass : String = "blended.updater.tools.configbuilder.ProfileBuilder"
 
   /**
    * Materialize the container profile.
@@ -199,7 +199,6 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
       "--create-launch-config", (profileDir / "launch.conf").toIO.getAbsolutePath(),
       "--download-missing",
       "--update-checksums",
-      "--write-overlays-config",
       "--explode-resources",
       "--maven-artifact", ctResources.mvnGav(), ctResources.jar().path.toIO.getAbsolutePath()
     ) ++
@@ -208,10 +207,10 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
       artifactMap().flatMap{ case(k,v) => Seq[String]("--maven-artifact", k, v) } ++
       repoUrls.flatMap(r => Seq("--maven-url", r))
 
-    T.log.debug(s"Calling $runtimeConfigBuilderClass with arguments : ${toolArgs.mkString("\n", "\n", "\n")}")
+    T.log.debug(s"Calling $profileBuilderClass with arguments : ${toolArgs.mkString("\n", "\n", "\n")}")
 
     Jvm.runSubprocess(
-      mainClass = runtimeConfigBuilderClass,
+      mainClass = profileBuilderClass,
       classPath = toolsCp,
       mainArgs = toolArgs
     )
