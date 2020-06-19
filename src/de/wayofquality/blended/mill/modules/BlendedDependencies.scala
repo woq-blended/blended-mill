@@ -41,8 +41,8 @@ trait BlendedDependencies { deps =>
   def activeMqKahadbStore = ivy"org.apache.activemq:activemq-kahadb-store:${activeMqVersion}"
   def activeMqSpring = ivy"org.apache.activemq:activemq-spring:${activeMqVersion}"
 
-  protected def akka(m: String) = ivy"com.typesafe.akka::akka-${m}:${akkaVersion}"
-  protected def akkaHttpModule(m: String) = ivy"com.typesafe.akka::akka-${m}:${akkaHttpVersion}"
+  def akka(m: String) = ivy"com.typesafe.akka::akka-${m}:${akkaVersion}"
+  def akkaHttpModule(m: String) = ivy"com.typesafe.akka::akka-${m}:${akkaHttpVersion}"
 
   // Convenient method to derive the coordinates for a given Akka or Akka Http jar that has been
   // wrapped by https://github.com/woq-blended/akka-osgi

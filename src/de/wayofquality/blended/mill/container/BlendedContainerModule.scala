@@ -9,11 +9,12 @@ import mill.modules.Jvm
 import os.{Path, RelPath}
 import coursier.maven.MavenRepository
 import mill.scalalib.publish.PublishInfo
+import de.wayofquality.blended.mill.publish.BlendedPublishModule
 
 /**
  * Define how blended containers are assembled.
  */
-trait BlendedContainerModule extends BlendedBaseModule { ctModule =>
+trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule { ctModule =>
 
   def featureModuleDeps : Seq[BlendedFeatureModule] = Seq.empty
   def profileName : T[String] = artifactId()
@@ -137,7 +138,7 @@ trait BlendedContainerModule extends BlendedBaseModule { ctModule =>
     val resources : String =
       s"""
          |resources = [
-         |  { url="mvn:${ctResources.mvnGav((profileVersion()))}" }
+         |  { url="mvn:${ctResources.mvnGav()}" }
          |]
          |""".stripMargin
 
@@ -189,6 +190,8 @@ trait BlendedContainerModule extends BlendedBaseModule { ctModule =>
       Seq.empty
     }
 
+    ctResources.publishLocal()
+
     // Assemble the command line parameters
     val toolArgs : Seq[String] = Seq(
       "-f", enhanceProfileConf().path.toIO.getAbsolutePath(),
@@ -198,7 +201,7 @@ trait BlendedContainerModule extends BlendedBaseModule { ctModule =>
       "--update-checksums",
       "--write-overlays-config",
       "--explode-resources",
-      "--maven-artifact", ctResources.mvnGav(profileVersion()), ctResources.jar().path.toIO.getAbsolutePath()
+      "--maven-artifact", ctResources.mvnGav(), ctResources.jar().path.toIO.getAbsolutePath()
     ) ++
       debugArgs ++
       featureFiles().flatMap(f => Seq[String]("--feature-repo", f)) ++
@@ -310,17 +313,24 @@ trait BlendedContainerModule extends BlendedBaseModule { ctModule =>
 
   // TODO: Apply magic to turn ctResources to magic overridable val (i.e. as in ScoverageData)
   // per default package downloadable resources in a separate jar
-  object ctResources extends BlendedBaseModule { base =>
+  object ctResources extends BlendedBaseModule with BlendedPublishModule { base =>
 
     override def baseDir = ctModule.baseDir 
     override def scalaVersion : T[String] = T { ctModule.scalaVersion() }
     type ProjectDeps = ctModule.ProjectDeps
     override def deps = ctModule.deps
 
+    override def description: String = s"Container resources for ${ctModule.description}"
+    override def githubRepo: String = ctModule.githubRepo
+    override def publishVersion: mill.T[String] = T { ctModule.publishVersion() }
+
+    override def millSourcePath: Path = ctModule.millSourcePath / "ctResources"
+
     override def artifactName : T[String] = T { ctModule.artifactName() + ".resources" }
 
-    def mvnGav : String => String = version => 
-      s"${deps.blendedOrg}:${blendedModule}:${version}"
+    def mvnGav : T [String] = T {
+      s"${artifactMetadata().group}:${artifactMetadata().id}:${publishVersion()}"
+    }
   }
 
   /**
