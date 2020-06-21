@@ -170,6 +170,7 @@ trait BlendedDependencies { deps =>
   def lambdaTest = ivy"de.tototec:de.tobiasroeser.lambdatest:0.6.2"
   def levelDbJava = ivy"org.iq80.leveldb:leveldb:0.9"
   def levelDbJni = ivy"org.fusesource.leveldbjni:leveldbjni-all:1.8"
+  def lihaoyiPprint = ivy"com.lihaoyi::pprint:0.5.9"
   def liquibase = ivy"org.liquibase:liquibase-core:3.6.1"
   def logbackCore = ivy"ch.qos.logback:logback-core:1.2.3"
   def logbackClassic = ivy"ch.qos.logback:logback-classic:1.2.3"
