@@ -374,8 +374,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
         s"""FROM $baseImage
            |LABEL maintainer="$maintainer"
            |LABEL version="${ctModule.profileVersion()}"
-           |ADD files/container /opt
-           |RUN chown -R $appUser.$appUser /opt/${appFolder()}
+           |ADD --chown=$appUser:$appUser files/container /opt
            |USER $appUser
            |ENV JAVA_HOME /opt/java
            |ENV PATH $${PATH}:$${JAVA_HOME}/bin
