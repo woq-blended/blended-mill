@@ -1,7 +1,10 @@
 package de.wayofquality.blended.mill.feature
 
 import mill._
+import mill.scalalib.Dep 
 import de.wayofquality.blended.mill.modules.BlendedBaseModule
+import mill.scalalib.PublishModule
+import mill.scalalib.CrossVersion
 
 trait BlendedFeatureModule extends BlendedBaseModule { base =>
 
@@ -21,6 +24,15 @@ trait BlendedFeatureModule extends BlendedBaseModule { base =>
 
   override def ivyDeps = T {
     featureDeps().map(_.dependency) ++ featureBundles().map(_.dependency)
+  }
+
+  def depFromModule(m : PublishModule, cross : CrossVersion) = T.task {
+    Dep(
+      org = m.artifactMetadata().group,
+      name = m.artifactName(), 
+      version = m.publishVersion(),
+      cross = CrossVersion.Binary(false)
+    ) 
   }
 
   def featureConf : T[PathRef] = T {
