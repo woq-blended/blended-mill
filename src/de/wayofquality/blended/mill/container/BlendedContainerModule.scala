@@ -10,6 +10,7 @@ import os.{Path, RelPath}
 import coursier.maven.MavenRepository
 import mill.scalalib.publish.PublishInfo
 import de.wayofquality.blended.mill.publish.BlendedPublishModule
+import de.wayofquality.blended.mill.feature.GAVHelper
 
 /**
  * Define how blended containers are assembled.
@@ -35,7 +36,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
       T.task {
 
         fd.featureBundles().map{ fb =>
-          val gav : String = fb.gav(scalaBinVersion())
+          val gav : String = GAVHelper.gav(scalaBinVersion())(fb.dependency)
 
           val singleDep : Seq[PathRef] = Lib.resolveDependencies(
             repositories,
