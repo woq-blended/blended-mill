@@ -47,7 +47,7 @@ object FeatureRef {
 
 case class FeatureRef(
   dependency : Dep,
-  name : String
+  names : Seq[String]
 )
 
 /**
@@ -74,7 +74,9 @@ case class FeatureModule(
       ""
     } else {
       features.map{ fd => 
-        s"""    { name = "${fd.dependency.dep.module.name.value}", version = "${fd.dependency.dep.version}" }"""
+        s"""    { url="mvn:${GAVHelper.gav(scalaBinVersion)(fd.dependency)}"
+           |      names = [${fd.names.map(s => "\"" + s + "\"").mkString(",")}]
+           |      version = "${fd.dependency.dep.version}" }""".stripMargin
       }.mkString("  features = [\n", ",\n", "\n  ]")
     }
 
@@ -97,7 +99,7 @@ object GAVHelper {
   def gav(scalaBinVersion : String)(dependency : Dep) : String = {
 
    val classifier : String = dependency.dep.attributes.classifier.value
-    val ext : String = dependency.dep.publication.ext.value
+    val ext : String = dependency.dep.publication.`type`.value
     val fullFormat : Boolean = classifier.nonEmpty ||  !List("", "jar").contains(ext)
 
     val builder : StringBuilder = new StringBuilder(dependency.dep.module.toString())

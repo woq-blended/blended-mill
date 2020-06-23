@@ -22,10 +22,6 @@ trait BlendedFeatureModule extends BlendedBaseModule { base =>
 
   def featureBundles : T[Seq[FeatureBundle]] = T { Seq.empty[FeatureBundle] }
 
-  override def ivyDeps = T {
-    featureDeps().map(_.dependency) ++ featureBundles().map(_.dependency)
-  }
-
   def depFromModule(m : PublishModule, cross : CrossVersion) = T.task {
     Dep(
       org = m.artifactMetadata().group,
