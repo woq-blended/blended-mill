@@ -1,6 +1,6 @@
 package de.wayofquality.blended.mill.feature
 
-import mill.scalalib.Dep 
+import mill.scalalib.Dep
 
 /**
   * Featurebundles represent a single jar that is deployed within a container
@@ -21,7 +21,7 @@ case class FeatureBundle private (
   start: Boolean
 ) {
 
-  def formatConfig(scalaBinVersion : String): String = {
+  def toConfig(scalaBinVersion : String): String = {
 
     val builder: StringBuilder = new StringBuilder("    { ")
 
@@ -33,54 +33,62 @@ case class FeatureBundle private (
     if (start) builder.append(", start=true")
 
     builder.append(" }")
-
     builder.toString()
   }
 }
 
 /**
-  * FeatureReferences represents a single module contained in a jar file of multiple feature module configs. 
+  * FeatureReferences represents a single module contained in a jar file of multiple feature module configs.
   */
 object FeatureRef {
-  implicit def rw : upickle.default.ReadWriter[FeatureRef] = upickle.default.macroRW 
+  implicit def rw : upickle.default.ReadWriter[FeatureRef] = upickle.default.macroRW
 }
 
 case class FeatureRef(
   dependency : Dep,
   names : Seq[String]
-)
+) {
 
-/**
-  * A feature module describes a feature with references to bundles and other feature modules. 
-  * From this information the indiviadual feature configs are generated.
-  */
-object FeatureModule {
-  implicit def rw : upickle.default.ReadWriter[FeatureModule] = upickle.default.macroRW 
+  def asConf(scalaBinVersion : String) : String = {
+
+    val url : String = GAVHelper.gav(scalaBinVersion)(dependency)
+    val nameList : String  = names.map(s => "\"" + s + "\"").mkString(",")
+
+    s"""{ url="mvn:$url" , names=[$nameList] }"""
+  }
 }
 
-case class FeatureModule(
+/**
+  * A feature module describes a feature with references to bundles and other feature modules.
+  * From this information the individual feature configs are generated.
+  */
+object Feature {
+  implicit def rw : upickle.default.ReadWriter[Feature] = upickle.default.macroRW
+}
+
+case class Feature(
+  repoUrl : String,
   name : String,
-  features : Seq[FeatureRef],    
-  bundles : Seq[FeatureBundle]    
+  features : Seq[FeatureRef],
+  bundles : Seq[FeatureBundle]
 ) {
 
   def featureConf(version : String, scalaBinVersion : String) : String = {
 
     val bundleConf : String = bundles
-      .map(_.formatConfig(scalaBinVersion))
+      .map(_.toConfig(scalaBinVersion))
       .mkString(",\n")
 
     val featureConf : String = if (features.isEmpty) {
       ""
     } else {
-      features.map{ fd => 
-        s"""    { url="mvn:${GAVHelper.gav(scalaBinVersion)(fd.dependency)}"
-           |      names = [${fd.names.map(s => "\"" + s + "\"").mkString(",")}]
-           |      version = "${fd.dependency.dep.version}" }""".stripMargin
-      }.mkString("  features = [\n", ",\n", "\n  ]")
+      features
+        .map{ fd => s"    ${fd.asConf(scalaBinVersion)}" }
+        .mkString("  features = [\n", ",\n", "\n  ]")
     }
 
     s"""{
+        |  repoUrl = "${repoUrl}"
         |  name = "${ name }"
         |  version = "${version}"
         |""".stripMargin + featureConf +
