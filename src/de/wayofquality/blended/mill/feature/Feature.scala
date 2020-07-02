@@ -1,6 +1,13 @@
 package de.wayofquality.blended.mill.feature
 
+import com.typesafe.config.{Config, ConfigFactory, ConfigValue, ConfigValueFactory}
 import mill.scalalib.Dep
+
+import scala.jdk.CollectionConverters._
+import de.wayofquality.blended.mill.utils.config.Implicits._
+import de.wayofquality.blended.mill.utils.config.MvnGav
+
+import scala.util.Try
 
 /**
   * Featurebundles represent a single jar that is deployed within a container
@@ -12,6 +19,17 @@ object FeatureBundle {
   def apply(dependency : Dep, level : Int, start : Boolean) : FeatureBundle =
     FeatureBundle(dependency, startLevel = Some(level), start = start)
 
+  def fromConfig(scalaBinVersion : String)(cfg : Config) : Try[FeatureBundle] = Try {
+    val url : String = cfg.getString("url").substring(4)
+    val dep : Dep = MvnGav.parse(url).map(_.asDep(scalaBinVersion)).get
+
+    FeatureBundle(
+      dependency = dep,
+      startLevel = cfg.getIntOption("startLevel"),
+      start = cfg.getBoolean("start", false)
+    )
+  }
+
   implicit def rw : upickle.default.ReadWriter[FeatureBundle] = upickle.default.macroRW
 }
 
@@ -21,19 +39,14 @@ case class FeatureBundle private (
   start: Boolean
 ) {
 
-  def toConfig(scalaBinVersion : String): String = {
+  def toConfig(scalaBinVersion : String): Config = {
 
-    val builder: StringBuilder = new StringBuilder("    { ")
+    val url : String = s"mvn:" + GAVHelper.gav(scalaBinVersion)(dependency)
 
-    builder.append("url=\"mvn:")
-    builder.append(GAVHelper.gav(scalaBinVersion)(dependency))
-    builder.append("\"")
-
-    startLevel.foreach { sl => builder.append(s", startLevel=${sl}") }
-    if (start) builder.append(", start=true")
-
-    builder.append(" }")
-    builder.toString()
+    ConfigFactory.empty()
+      .withValue("url", ConfigValueFactory.fromAnyRef(url))
+      .setOptionInt("startLevel", startLevel)
+      .setOptionAnyRef("start", if (start) {Some(true.asInstanceOf[AnyRef])} else {None})
   }
 }
 
@@ -41,6 +54,16 @@ case class FeatureBundle private (
   * FeatureReferences represents a single module contained in a jar file of multiple feature module configs.
   */
 object FeatureRef {
+
+  def fromConfig(scalaBinVersion : String)(cfg : Config) : Try[FeatureRef] = Try {
+    val url : String = cfg.getString("url").substring(4)
+
+    FeatureRef(
+      dependency = MvnGav.parse(url).map(_.asDep(scalaBinVersion)).get,
+      names = cfg.getStringList("names", List.empty[String])
+    )
+  }
+
   implicit def rw : upickle.default.ReadWriter[FeatureRef] = upickle.default.macroRW
 }
 
@@ -49,12 +72,13 @@ case class FeatureRef(
   names : Seq[String]
 ) {
 
-  def asConf(scalaBinVersion : String) : String = {
+  def toConfig(scalaBinVersion : String) : Config = {
 
-    val url : String = GAVHelper.gav(scalaBinVersion)(dependency)
-    val nameList : String  = names.map(s => "\"" + s + "\"").mkString(",")
+    val url : String = "mvn:" + GAVHelper.gav(scalaBinVersion)(dependency)
 
-    s"""{ url="mvn:$url" , names=[$nameList] }"""
+    ConfigFactory.empty()
+      .withValue("url", ConfigValueFactory.fromAnyRef(url))
+      .withValue("names", ConfigValueFactory.fromIterable(names.asJava))
   }
 }
 
@@ -63,6 +87,23 @@ case class FeatureRef(
   * From this information the individual feature configs are generated.
   */
 object Feature {
+
+  def fromConfig(scalaBinVersion : String)(cfg : Config) : Try[Feature] = Try {
+
+    val features : Seq[FeatureRef] = cfg.getConfigList("features", List.empty)
+      .map(c => FeatureRef.fromConfig(scalaBinVersion)(c).get)
+
+    val bundles : Seq[FeatureBundle] = cfg.getConfigList("bundles", List.empty)
+      .map(c => FeatureBundle.fromConfig(scalaBinVersion)(c).get)
+
+    Feature(
+      repoUrl = cfg.getString("repoUrl"),
+      name = cfg.getString("name"),
+      features = features,
+      bundles = bundles
+    )
+  }
+
   implicit def rw : upickle.default.ReadWriter[Feature] = upickle.default.macroRW
 }
 
@@ -73,32 +114,26 @@ case class Feature(
   bundles : Seq[FeatureBundle]
 ) {
 
-  def featureConf(version : String, scalaBinVersion : String) : String = {
+  def toConfig(version : String, scalaBinVersion : String) : Config = {
 
-    val bundleConf : String = bundles
-      .map(_.toConfig(scalaBinVersion))
-      .mkString(",\n")
+    val bundleConf : ConfigValue = ConfigValueFactory.fromIterable(
+      bundles.map(_.toConfig(scalaBinVersion).root()).asJava
+    )
 
-    val featureConf : String = if (features.isEmpty) {
-      ""
+    val cfg : Config = if (features.isEmpty) {
+      ConfigFactory.empty()
     } else {
-      features
-        .map{ fd => s"    ${fd.asConf(scalaBinVersion)}" }
-        .mkString("  features = [\n", ",\n", "\n  ]")
+      ConfigFactory.empty()
+        .withValue("features", ConfigValueFactory.fromIterable(
+          features.map(_.toConfig(scalaBinVersion).root()).asJava
+        ))
     }
 
-    s"""{
-        |  repoUrl = "${repoUrl}"
-        |  name = "${ name }"
-        |  version = "${version}"
-        |""".stripMargin + featureConf +
-        """
-        |  bundles = [
-        |""".stripMargin + bundleConf +
-        """
-        |  ]
-        |}""".stripMargin
-
+    cfg
+      .setOptionString("repoUrl", Some(repoUrl))
+      .setOptionString("name", Some(name))
+      .setOptionString("version", Some(version))
+      .withValue("bundles", bundleConf)
   }
 }
 

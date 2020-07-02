@@ -1,7 +1,7 @@
 package de.wayofquality.blended.mill.feature
 
+import com.typesafe.config.ConfigRenderOptions
 import de.wayofquality.blended.mill.modules.BlendedBaseModule
-
 import mill._
 import mill.scalalib.PublishModule
 
@@ -15,7 +15,10 @@ trait BlendedFeatureJar extends BlendedBaseModule { jar : PublishModule =>
     os.makeDir.all(dest / "features")
 
     features().foreach{ f =>
-      val conf : String = f.featureConf(publishVersion(), scalaBinVersion())
+      val conf : String =
+        f.toConfig(publishVersion(), scalaBinVersion())
+          .root()
+          .render(ConfigRenderOptions.defaults().setFormatted(true).setComments(false).setOriginComments(false))
       os.write(dest / "features" / s"${f.name}.conf", conf)
     }
 

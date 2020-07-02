@@ -1,12 +1,16 @@
 package de.wayofquality.blended.mill.container
 
+import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions, ConfigRenderOptions}
 import coursier.MavenRepository
+import de.wayofquality.blended.mill.feature.{Feature, FeatureBundle, GAVHelper}
 import mill._
 import mill.scalalib._
 import de.wayofquality.blended.mill.modules.BlendedBaseModule
 import de.wayofquality.blended.mill.utils.{FilterUtil, ZipUtil}
 import mill.modules.Jvm
 import os.{Path, RelPath}
+
+import scala.util.Try
 //import coursier.maven.MavenRepository
 import mill.scalalib.publish.PublishInfo
 import de.wayofquality.blended.mill.publish.BlendedPublishModule
@@ -32,43 +36,85 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
    */
   def artifactMap : T[Map[String, String]] = T {
 
-    Map.empty[String, String]
+    def refKeys(f : FeatureRef) : List[String] =
+      f.names.map(n => s"mvn:${GAVHelper.gav(scalaBinVersion())(f.dependency)}#$n").toList
 
-//    val bundles = T.traverse(featureModuleDeps)(fd =>
-//      T.task {
-//
-//        fd.featureBundles().map{ fb =>
-//          val gav : String = GAVHelper.gav(scalaBinVersion())(fb.dependency)
-//
-//          val singleDep : Seq[PathRef] = Lib.resolveDependencies(
-//            repositories,
-//            resolveCoursierDependency().apply(_),
-//            Agg(fb.dependency.exclude("*" -> "*")),
-//            false,
-//            mapDependencies = None,
-//            Some(implicitly[mill.util.Ctx.Log])
-//          ) match {
-//            case mill.api.Result.Success(r) =>
-//              if (r.iterator.isEmpty) {
-//                // TODO: This will appear in the log, but won't break the build. The ProfileBuilder
-//                // will try to download that file itself.
-//                // This happens i.e. when dependencies are not "jar"s
-//                T.log.error(s"No artifact found for [$gav]")
-//              }
-//              r.iterator.to(Seq)
-//            case mill.api.Result.Failure(m, _)  =>
-//              T.log.error(s"No artifact found for [$gav]")
-//              Seq.empty
-//              //sys.error(s"Failed to resolve [$gav] : $m")
-//            case _ => Seq.empty
-//          }
-//
-//          singleDep.map(pr => (gav, pr.path.toIO.getAbsolutePath()))
-//        }
-//      }
-//    )()
-//
-//    bundles.flatten.flatten.toMap
+    def repoKey(repo : Feature) : String = s"${repo.repoUrl}#${repo.name}"
+
+    val featureConfigs : Map[String, Feature] = featureFiles().map { pr =>
+      val cfgString = os.read(pr.path)
+      T.log.ticker(s"Reading feature config [${pr.path}] ")
+      val cfg : Config = ConfigFactory.parseString(cfgString, ConfigParseOptions.defaults())
+
+      Feature.fromConfig(scalaBinVersion())(cfg).get
+    }.map(f => repoKey(f) -> f).toMap
+
+    /** Main method to walk the feature references of a container and come up with a list
+     *  of all referenced bundles.
+     */
+    def resolveFeatures(
+      seenFeatureRefs : List[String],
+      pendingFeatureRefs : List[String],
+      bundles : List[FeatureBundle]
+    ) : Try[List[FeatureBundle]] = Try {
+      pendingFeatureRefs match {
+        // No more pending features => we have found all bundles
+        case Nil => bundles
+        case head :: tail =>
+          T.log.ticker(s"Reading bundles for feature ref [$head]")
+
+          val feature : Feature = featureConfigs.get(head) match {
+            case None => throw new Exception(s"Feature Config for [$head] has not been resolved.")
+            case Some(f) => f
+          }
+
+          val newPending : List[String] =
+            (feature.features.flatMap(fr => refKeys(fr)) ++ tail).distinct.toList
+
+          val newBundles : List[FeatureBundle] = (feature.bundles ++ bundles).distinct.toList
+
+          resolveFeatures(head :: seenFeatureRefs, newPending, newBundles).get
+      }
+    }
+
+    val bundles : List[FeatureBundle] = resolveFeatures(
+      seenFeatureRefs = List.empty,
+      pendingFeatureRefs = features().flatMap { f => refKeys(f) }.toList,
+      bundles = List.empty
+    ).get
+
+    val resolvedBundles : Seq[Seq[(String, String)]] = bundles.map{ bundle =>
+      val gav : String = GAVHelper.gav(scalaBinVersion())(bundle.dependency)
+
+      T.log.ticker(s"Resolving bundle [$bundle]")
+
+      val singleDep : Seq[PathRef] = Lib.resolveDependencies(
+        repositories,
+        resolveCoursierDependency().apply(_),
+        Agg(bundle.dependency.exclude("*" -> "*")),
+        false,
+        mapDependencies = None,
+        Some(implicitly[mill.util.Ctx.Log])
+      ) match {
+        case mill.api.Result.Success(r) =>
+          if (r.iterator.isEmpty) {
+            // TODO: This will appear in the log, but won't break the build. The ProfileBuilder
+            // will try to download that file itself.
+            // This happens i.e. when dependencies are not "jar"s
+            T.log.error(s"No artifact found for [${bundle.dependency}]")
+          }
+          r.iterator.to(Seq)
+        case mill.api.Result.Failure(m, _)  =>
+          T.log.error(s"Failed to resolve artifact [${bundle.dependency}]")
+          Seq.empty
+          //sys.error(s"Failed to resolve [$gav] : $m")
+        case _ => Seq.empty
+      }
+
+      singleDep.map(pr => (gav, pr.path.toIO.getAbsolutePath()))
+    }
+
+    resolvedBundles.flatten.toMap
   }
 
   /**
@@ -148,7 +194,8 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
          |]
          |""".stripMargin
 
-    val featureRefs : Seq[String] = features().map(fd => s"  ${fd.asConf(scalaBinVersion())}" )
+    val featureRefs : Seq[String] = features()
+      .map(fd => fd.toConfig(scalaBinVersion()).root().render(ConfigRenderOptions.concise()) )
 
     val generated = content +
       resources +
@@ -232,7 +279,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     ) ++
       debugArgs ++
       featureFiles().flatMap(f => Seq[String]("--feature-repo", f.path.toIO.getAbsolutePath())) ++
-      //artifactMap().flatMap{ case(k,v) => Seq[String]("--maven-artifact", k, v) } ++
+      artifactMap().flatMap{ case(k,v) => Seq[String]("--maven-artifact", k, v) } ++
       repoUrls.flatMap(r => Seq[String]("--maven-url", r))
 
     T.log.debug(s"Calling $profileBuilderClass with arguments : ${toolArgs.mkString("\n", "\n", "\n")}")
@@ -373,7 +420,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     /**
      * The base image that shall be used for the generated docker image.
      */
-    def baseImage : String = "atooni/zulu-8-alpine:1.0.1"
+    def baseImage : String = "blended/zulu-8-alpine:1.0.1"
 
     /**
      * The ports exposed from the docker image
