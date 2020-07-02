@@ -1,7 +1,7 @@
 package de.wayofquality.blended.mill.modules
 
 import coursier.Dependency
-import coursier.core.{Organization, Extension}
+import coursier.core.Organization
 import mill.scalalib._
 
 trait BlendedDependencies { deps =>
@@ -122,7 +122,7 @@ trait BlendedDependencies { deps =>
 
   def hawtioWeb = {
     val dep = ivy"io.hawt:hawtio-web:1.5.11"
-    val publ = dep.dep.publication.withExt(Extension("war"))
+    val publ = dep.dep.publication.withType(coursier.core.Type("war"))
     dep.copy(dep = dep.dep.withPublication(publ))
   }
 
