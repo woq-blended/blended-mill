@@ -9,7 +9,7 @@ import os.Path
  */
 trait BlendedPublishModule extends PublishModule {
   /** Force the user to provide a description for each published module */
-  def description: String
+  def description: T[String]
 
   def scpHost : String = "u233308.your-storagebox.de"
 
@@ -53,7 +53,7 @@ trait BlendedPublishModule extends PublishModule {
 
   override def pomSettings: T[PomSettings] = T {
     PomSettings(
-      description = description,
+      description = description(),
       organization = organization,
       url = s"https://github.com/$githubOwner/$githubRepo",
       licenses = Seq(License.`Apache-2.0`),

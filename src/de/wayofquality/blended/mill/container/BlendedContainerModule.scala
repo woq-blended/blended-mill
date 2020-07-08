@@ -394,7 +394,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     type ProjectDeps = ctModule.ProjectDeps
     override def deps = ctModule.deps
 
-    override def description: String = s"Container resources for ${ctModule.description}"
+    override def description: T[String] = T { s"Container resources for ${ctModule.description()}" }
     override def githubRepo: String = ctModule.githubRepo
     override def publishVersion: mill.T[String] = T { ctModule.publishVersion() }
 

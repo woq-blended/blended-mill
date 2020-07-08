@@ -20,10 +20,10 @@ trait BlendedDependencies { deps =>
   def microJsonVersion = "1.6"
   def parboiledVersion = "1.1.6"
   def prickleVersion = "1.1.16"
-  def scalaJsVersion = "1.0.1"
+  def scalaJsVersion = "1.1.0"
   def scalaVersion = "2.13.2"
   def scalaBinVersion(scalaVersion: String) = scalaVersion.split("[.]").take(2).mkString(".")
-  def scalatestVersion = "3.1.1"
+  def scalatestVersion = "3.2.0"
   def scoverageVersion = "1.4.1"
   def slf4jVersion = "1.7.25"
   def sprayVersion = "1.3.5"
@@ -128,6 +128,7 @@ trait BlendedDependencies { deps =>
 
   def h2 = ivy"com.h2database:h2:1.4.197"
   def hikaricp = ivy"com.zaxxer:HikariCP:3.1.0"
+  def hsqldb = ivy"hsqldb:hsqldb:1.8.0.7"
 
   protected def jetty(n: String) = ivy"org.eclipse.jetty:jetty-${n}:$jettyVersion"
   protected def jettyOsgi(n : String) = ivy"org.eclipse.jetty.osgi:jetty-${n}:$jettyVersion"
@@ -149,7 +150,7 @@ trait BlendedDependencies { deps =>
 
   def javaxMail = ivy"javax.mail:mail:1.4.5"
   def javaxServlet31 = ivy"org.everit.osgi.bundles:org.everit.osgi.bundles.javax.servlet.api:3.1.0"
-  
+
   def jaxb = ivy"org.glassfish.jaxb:jaxb-runtime:2.3.1"
   def jcip = ivy"net.jcip:jcip-annotations:1.0"
   def jclOverSlf4j = ivy"org.slf4j:jcl-over-slf4j:${slf4jVersion}"
@@ -165,7 +166,8 @@ trait BlendedDependencies { deps =>
   def jsonLenses = ivy"net.virtual-void::json-lenses:0.6.2"
   def jsr305 = ivy"com.google.code.findbugs:jsr305:3.0.1"
   def julToSlf4j = ivy"org.slf4j:jul-to-slf4j:${slf4jVersion}"
-  def junit = ivy"junit:junit:4.12"
+  def junit = ivy"junit:junit:4.13"
+  val junitInterface = ivy"com.novocode:junit-interface:0.11"
 
   def lambdaTest = ivy"de.tototec:de.tobiasroeser.lambdatest:0.6.2"
   def levelDbJava = ivy"org.iq80.leveldb:leveldb:0.9"

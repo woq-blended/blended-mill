@@ -86,7 +86,7 @@ trait PluginModule extends ScalaModule with BlendedPublishModule {
 
   override def publishVersion: T[String] = T { pluginVersion() }
 
-  override def description : String = "A collection of utilities for building blended projects with mill"
+  override def description : T[String] = T { "A collection of utilities for building blended projects with mill" }
 
   override def generatedSources: Target[Seq[PathRef]] = T {
 
