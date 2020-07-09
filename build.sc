@@ -1,4 +1,7 @@
-import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
+import $ivy.`com.lihaoyi::mill-contrib-bsp:$MILL_VERSION`
+import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest:0.3.3`
+
+import de.tobiasroeser.mill.integrationtest._
 
 import mill._
 import mill.define.Target
@@ -28,7 +31,7 @@ trait Deps {
 }
 
 object Deps_0_7 extends Deps {
-  override def millVersion = "0.7.3"
+  override def millVersion = "0.7.4"
   override def millOsgiVersion = "0.3.0"
 
   override def scalafixVersion: String = "0.1.1"
@@ -121,3 +124,7 @@ object blended extends Module {
   }
 }
 
+object itest extends MillIntegrationTestModule {
+  override def millTestVersion = "0.7.4"
+  override def pluginsUnderTest = Seq(blended.mill)
+}
