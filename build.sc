@@ -1,4 +1,7 @@
 import $ivy.`com.lihaoyi::mill-contrib-bsp:$MILL_VERSION`
+import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest:0.3.3`
+
+import de.tobiasroeser.mill.integrationtest._
 
 import mill._
 import mill.define.Target
@@ -121,3 +124,7 @@ object blended extends Module {
   }
 }
 
+object itest extends MillIntegrationTestModule {
+  override def millTestVersion = "0.7.3"
+  override def pluginsUnderTest = Seq(blended.mill)
+}
