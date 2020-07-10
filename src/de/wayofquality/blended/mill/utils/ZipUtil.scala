@@ -27,10 +27,10 @@ trait ZipUtil {
         (file, mapping) <-
           (if (os.isFile(p)) Iterator(p -> os.rel / p.last)
            else os.walk(p).iterator.withFilter(_ => includeDirs).map(sub => sub -> sub.relativeTo(p)))
-        if !seen(mapping) && fileFilter(p, mapping)
+        if !seen.contains(mapping)
       } {
+        seen.add(mapping)
         if (os.isFile(file)) {
-          seen.add(mapping)
           val entry = new ZipEntry(prefix + mapping.toString)
           entry.setTime(timestamp.getOrElse(os.mtime(file)))
           zip.putNextEntry(entry)

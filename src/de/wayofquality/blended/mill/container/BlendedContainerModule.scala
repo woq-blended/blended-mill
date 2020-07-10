@@ -210,7 +210,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
    * These are all feature repository jar files
    * @return
    */
-  def featureRepos : T[Agg[Dep]] = T { Agg(features().map(_.dependency):_*) }
+  def featureRepos : T[Agg[Dep]] = T { Agg(features().map(_.dependency.exclude("*" -> "*")):_*) }
 
   /**
    * Return a sequence of all feature files used in this container. These files will be handed over
@@ -346,11 +346,12 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
    * Package the runnable container into a zip archive.
    */
   def dist = T {
-    val zip = T.dest / "container.zip"
+    val zip : Path = T.dest / "container.zip"
     ZipUtil.createZip(
       outputPath = zip,
       inputPaths = Seq(container().path),
-      prefix = s"${artifactId()}-${profileVersion()}/"
+      prefix = s"${artifactId()}-${profileVersion()}/",
+      includeDirs = true
     )
 
     PathRef(zip)

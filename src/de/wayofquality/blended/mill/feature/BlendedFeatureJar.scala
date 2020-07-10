@@ -7,7 +7,7 @@ import mill.scalalib.PublishModule
 
 trait BlendedFeatureJar extends BlendedBaseModule { jar : PublishModule =>
 
-  def features : T[Seq[Feature]] = T{ Seq.empty[Feature] }
+  def features : define.Command[Seq[Feature]] = T.command { Seq.empty[Feature] }
 
   override def resources = T.sources {
 
