@@ -7,6 +7,7 @@ import mill._
 import mill.scalalib._
 import de.wayofquality.blended.mill.modules.BlendedBaseModule
 import de.wayofquality.blended.mill.utils.{FilterUtil, ZipUtil}
+import mill.define.Sources
 import mill.modules.Jvm
 import os.{Path, RelPath}
 
@@ -300,6 +301,8 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
   def containerExtraFiles  = T.sources { millSourcePath / "src"/ "package" / "container" }
   def profileExtraFiles = T.sources { millSourcePath / "src" / "package" / "profile" }
 
+  def applyFilter : Seq[RelPath] = Seq.empty
+
   /**
    * Create the runnable container by copying all resources into the right place.
    */
@@ -388,7 +391,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
 
   // TODO: Apply magic to turn ctResources to magic overridable val (i.e. as in ScoverageData)
   // per default package downloadable resources in a separate jar
-  object ctResources extends BlendedBaseModule with BlendedPublishModule { base =>
+  object  ctResources extends BlendedBaseModule with BlendedPublishModule { base =>
 
     override def baseDir = ctModule.baseDir
     override def scalaVersion : T[String] = T { ctModule.scalaVersion() }
@@ -405,6 +408,23 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
 
     def mvnGav : T [String] = T {
       s"${artifactMetadata().group}:${artifactMetadata().id}:${publishVersion()}"
+    }
+
+    override def resources: Sources = T.sources {
+
+      FilterUtil.filterDirs(
+        unfilteredResourcesDirs = Seq(millSourcePath / "src" / "main" / "resources"),
+        pattern = ZipUtil.defaultPattern,
+        filterTargetDir = T.dest,
+        props = Map(
+          "profile.name" -> profileName(),
+          "profile.version" -> profileVersion(),
+          "blended.version" -> blendedCoreVersion
+        ),
+        failOnMiss = false
+      )
+
+      Seq(PathRef(T.dest), PathRef(millSourcePath / "src" / "main" / "binaryResources"))
     }
   }
 

@@ -69,4 +69,6 @@ trait ZipUtil {
     finally zipStream.close()
   }
 }
-object ZipUtil extends ZipUtil
+object ZipUtil extends ZipUtil {
+  val defaultPattern : String = """\$\{(.+?)\}"""
+}
