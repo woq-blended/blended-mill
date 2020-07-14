@@ -6,13 +6,13 @@ import de.wayofquality.blended.mill.feature.{Feature, FeatureBundle, GAVHelper}
 import mill._
 import mill.scalalib._
 import de.wayofquality.blended.mill.modules.BlendedBaseModule
+import de.wayofquality.blended.mill.utils.config.CopyHelper
 import de.wayofquality.blended.mill.utils.{FilterUtil, ZipUtil}
-import mill.define.Sources
+import mill.define.{Command, Sources}
 import mill.modules.Jvm
 import os.{Path, RelPath}
 
 import scala.util.Try
-//import coursier.maven.MavenRepository
 import mill.scalalib.publish.PublishInfo
 import de.wayofquality.blended.mill.publish.BlendedPublishModule
 import de.wayofquality.blended.mill.feature.FeatureRef
@@ -20,6 +20,7 @@ import de.wayofquality.blended.mill.feature.FeatureRef
 /**
  * Define how blended containers are assembled.
  */
+
 trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule { ctModule =>
 
   def features : T[Seq[FeatureRef]] = T { Seq.empty[FeatureRef] }
@@ -303,28 +304,16 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
 
   def applyFilter : Seq[RelPath] = Seq.empty
 
+  def profileDir(base : Path) : Command[Path] = T.command {
+    base / "profiles" / profileName() / profileVersion()
+  }
+
   /**
    * Create the runnable container by copying all resources into the right place.
    */
   def container : T [PathRef] = T {
 
-    /**
-     * Helper to copy the content of a given directory into a destination directory.
-     * The given directory may not be present (i.e. no extra files are required).
-     * Files within the destination folder will be overwritten by the content of the
-     * given directory.
-     */
-    def copyOver(src: Path, dest: Path) : Unit = {
-      if (src.toIO.exists()) {
-        os.walk(src).foreach { p =>
-          if (p.toIO.isFile()) {
-            os.copy(p, dest / p.relativeTo(src), replaceExisting = true, createFolders = true)
-          }
-        }
-      }
-    }
-
-    val ctDir = T.dest
+    val ctDir : Path = T.dest
 
     val launcher : Path = unpackLauncher().path
     val profile : Path = materializeProfile().path
@@ -337,10 +326,10 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     os.copy.into(profile / "launch.conf", ctDir)
     os.copy(profile, profileDir, createFolders = true)
 
-    containerExtraFiles().map(_.path).foreach(copyOver(_, ctDir) )
-    profileExtraFiles().map(_.path).foreach(copyOver(_, profileDir))
+    containerExtraFiles().map(_.path).foreach(CopyHelper.copyOver(_, ctDir) )
+    profileExtraFiles().map(_.path).foreach(CopyHelper.copyOver(_, profileDir))
 
-    os.remove(ctDir / "profiles" / profileName() / profileVersion() / "launch.conf")
+    os.remove(profileDir / "launch.conf")
 
     PathRef(ctDir)
   }
@@ -458,13 +447,35 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
      */
     def appUser : String = "blended"
 
+    /**
+     * The name of the docker image generated
+     */
     def dockerImage : T[String]
 
+    /**
+     * The docker extra files are files that will be copied into either the container
+     * directory (blended.home) or the profile directory (profile.home).
+     * These files will override or complement the files that are coming from the container build.
+     */
+    def dockerExtrafiles : Option[Path] = None
+
+    /**
+     * Generate the dockerfile to produce the docker image
+     */
     def dockerconfig : T[PathRef] = T {
 
       val dir = T.dest
 
-      os.copy(ctModule.container().path, dir / "files" / "container" / appFolder(), createFolders = true)
+      val ctDir : Path = dir / "files" / "container" / appFolder()
+      val pDir : Path = dir / "files" / "container" / appFolder() / "profiles" / profileName() / profileVersion()
+
+      os.copy(ctModule.container().path, ctDir, createFolders = true)
+
+      dockerExtrafiles.foreach { p =>
+        T.log.info(s"Using docker extrafiles from base directory [${p.toIO.getAbsolutePath()}]")
+        CopyHelper.copyOver(p / "container", ctDir)
+        CopyHelper.copyOver(p / "profile", pDir)
+      }
 
       val content : String =
         s"""FROM $baseImage
