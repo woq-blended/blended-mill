@@ -28,6 +28,8 @@ trait Deps {
   def millScalafix = ivy"com.goyeau::mill-scalafix:${scalafixVersion}"
 
   def millOsgi = ivy"de.tototec::de.tobiasroeser.mill.osgi:$millOsgiVersion"
+
+  def commonsCompress = ivy"org.apache.commons:commons-compress:1.13"
 }
 
 object Deps_0_7 extends Deps {
@@ -114,6 +116,7 @@ object blended extends Module {
     val deps = Deps_0_7
 
     override def ivyDeps = T { super.ivyDeps() ++ Agg(
+      deps.commonsCompress,
       deps.millMain,
       deps.millScalalib,
       deps.millScalaJsLib,
