@@ -7,7 +7,7 @@ import mill._
 import mill.scalalib._
 import de.wayofquality.blended.mill.modules.BlendedBaseModule
 import de.wayofquality.blended.mill.utils.config.CopyHelper
-import de.wayofquality.blended.mill.utils.{FilterUtil, ZipUtil}
+import de.wayofquality.blended.mill.utils.{FilterUtil, TarUtil, ZipUtil}
 import mill.define.{Command, Sources}
 import mill.modules.Jvm
 import os.{Path, RelPath}
@@ -338,15 +338,15 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
    * Package the runnable container into a zip archive.
    */
   def dist = T {
-    val zip : Path = T.dest / "container.zip"
-    ZipUtil.createZip(
-      outputPath = zip,
-      inputPaths = Seq(container().path),
-      prefix = s"${artifactId()}-${profileVersion()}/",
+    val tarGz : Path = T.dest / s"${artifactId()}-${publishVersion()}.tar.gz"
+    TarUtil.tar(
+      tarGz,
+      Seq(container().path),
+      prefix = s"${artifactId()}-${publishVersion()}/",
       includeDirs = true
     )
 
-    PathRef(zip)
+    PathRef(tarGz)
   }
 
   /**
@@ -354,7 +354,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
    */
   def deploymentpack = T {
 
-    val deploy = T.dest / "deployment.zip"
+    val deploy = T.dest / s"${artifactId}-${publishVersion()}.zip"
 
     val profileDir : Path = container().path / "profiles" / profileName() / profileVersion()
 
@@ -374,7 +374,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
    * Make sure the container zips are also published.
    */
   def ctArtifacts : T[Seq[PublishInfo]]= T  { Seq(
-    PublishInfo(file = dist(), classifier = Some("full-nojre"), ext = "zip", ivyConfig = "compile", ivyType = "dist"),
+    PublishInfo(file = dist(), classifier = Some("full-nojre"), ext = "tgz", ivyConfig = "compile", ivyType = "dist"),
     PublishInfo(file = deploymentpack(), classifier = Some("deploymentpack"), ext = "zip", ivyConfig = "compile", ivyType = "dist")
   )}
 
@@ -403,7 +403,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
 
       FilterUtil.filterDirs(
         unfilteredResourcesDirs = Seq(millSourcePath / "src" / "main" / "resources"),
-        pattern = ZipUtil.defaultPattern,
+        pattern = FilterUtil.defaultPattern,
         filterTargetDir = T.dest,
         props = Map(
           "profile.name" -> profileName(),

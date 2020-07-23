@@ -1,10 +1,14 @@
 package de.wayofquality.blended.mill.utils
 
 import java.io._
+import java.util.zip.GZIPOutputStream
 
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
-import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveOutputStream}
+import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveOutputStream, TarConstants}
 import os.{Path, RelPath}
+
+import scala.collection.mutable
+import scala.util.Try
 
 object TarUtil {
 
@@ -40,44 +44,56 @@ object TarUtil {
     dest
   }
 
-  def tar(file: File, os: OutputStream, user: Int = 0, group: Int = 0): Unit = {
+  def tar(
+    outputPath: Path,
+    inputPaths: Seq[Path],
+    fileFilter: (os.Path, os.RelPath) => Boolean = (p: os.Path, r: os.RelPath) => true,
+    prefix: String = "",
+    includeDirs: Boolean = false,
+    user : Int = 0,
+    group : Int = 0
+  ): Try[Path] = Try {
 
-    def addFileToTar(tarOs: TarArchiveOutputStream, file: File, base: String): Unit = {
-      val entryName = base + file.getName()
-      val entry = new TarArchiveEntry(file, entryName)
+    os.remove.all(outputPath)
+    val seen = mutable.Set.empty[os.RelPath]
+    val fos : OutputStream = new FileOutputStream(outputPath.toIO)
+    val zos : OutputStream = new GZIPOutputStream(fos)
+    val tar = new TarArchiveOutputStream(zos)
 
-      entry.setUserId(user)
-      entry.setGroupId(group)
+    tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX)
+    tar.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX)
 
-      tarOs.putArchiveEntry(entry)
-
-      if (file.isFile()) {
-        StreamCopy.copy(new FileInputStream(file), tarOs)
-        tarOs.closeArchiveEntry()
-      } else {
-        tarOs.closeArchiveEntry()
-
-        val files = Option(file.listFiles())
-        files.map { ff =>
-          ff.foreach { f =>
-            addFileToTar(tarOs, f, entryName + "/")
-          }
+    try{
+      assert(inputPaths.forall(os.exists(_)))
+      for{
+        p <- inputPaths
+        (file, mapping) <-
+          (if (os.isFile(p)) Iterator(p -> os.rel / p.last)
+          else os.walk(p).iterator.withFilter(_ => includeDirs).map(sub => sub -> sub.relativeTo(p)))
+        if !seen.contains(mapping)
+      } {
+        seen.add(mapping)
+        if (os.isFile(file)) {
+          val entry = new TarArchiveEntry(prefix + mapping.toString)
+          entry.setSize(os.size(file))
+          entry.setUserId(user)
+          entry.setGroupId(group)
+          tar.putArchiveEntry(entry)
+          if(os.isFile(file)) tar.write(os.read.bytes(file))
+          tar.closeArchiveEntry()
+        } else if (os.isDir(file)) {
+          val entry = new TarArchiveEntry(prefix + mapping.toString, TarConstants.LF_DIR)
+          entry.setUserId(user)
+          entry.setGroupId(group)
+          tar.putArchiveEntry(entry)
+          tar.closeArchiveEntry()
         }
       }
-    }
-
-    if (!file.exists()) throw new FileNotFoundException(file.getAbsolutePath())
-
-    val bOut = new BufferedOutputStream(os)
-    val tarOut = new TarArchiveOutputStream(bOut)
-
-    try {
-      addFileToTar(tarOut, file, "")
+      outputPath
     } finally {
-      tarOut.finish()
-      tarOut.close()
-      bOut.close()
-      os.close()
+      tar.close()
+      zos.close()
+      fos.close()
     }
   }
 }

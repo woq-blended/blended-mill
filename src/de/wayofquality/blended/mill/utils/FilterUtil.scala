@@ -62,4 +62,6 @@ trait FilterUtil {
   }
 
 }
-object FilterUtil extends FilterUtil
+object FilterUtil extends FilterUtil {
+  val defaultPattern : String = """\$\{(.+?)\}"""
+}

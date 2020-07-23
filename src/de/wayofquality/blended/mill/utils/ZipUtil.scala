@@ -4,23 +4,27 @@ import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 
 import os.Path
+import java.util.zip.ZipOutputStream
+
+import scala.collection.mutable
+import scala.util.Try
 
 trait ZipUtil {
 
-  def createZip(outputPath: os.Path,
-                inputPaths: Seq[Path],
-                fileFilter: (os.Path, os.RelPath) => Boolean = (p: os.Path, r: os.RelPath) => true,
-                prefix: String = "",
-                timestamp: Option[Long] = None,
-                includeDirs: Boolean = false): Unit = {
-    import java.util.zip.ZipOutputStream
-    import scala.collection.mutable
+  def createZip(
+    outputPath: os.Path,
+    inputPaths: Seq[Path],
+    fileFilter: (os.Path, os.RelPath) => Boolean = (p: os.Path, r: os.RelPath) => true,
+    prefix: String = "",
+    timestamp: Option[Long] = None,
+    includeDirs: Boolean = false
+  ): Try[Path] = Try {
 
     os.remove.all(outputPath)
     val seen = mutable.Set.empty[os.RelPath]
     val zip = new ZipOutputStream(new FileOutputStream(outputPath.toIO))
 
-    try{
+    try {
       assert(inputPaths.forall(os.exists(_)))
       for{
         p <- inputPaths
@@ -38,6 +42,7 @@ trait ZipUtil {
           zip.closeEntry()
         }
       }
+      outputPath
     } finally {
       zip.close()
     }
@@ -69,6 +74,4 @@ trait ZipUtil {
     finally zipStream.close()
   }
 }
-object ZipUtil extends ZipUtil {
-  val defaultPattern : String = """\$\{(.+?)\}"""
-}
+object ZipUtil extends ZipUtil
