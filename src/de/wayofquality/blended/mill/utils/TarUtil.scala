@@ -74,18 +74,14 @@ object TarUtil {
       } {
         seen.add(mapping)
         if (os.isFile(file)) {
-          val entry = new TarArchiveEntry(prefix + mapping.toString)
-          entry.setSize(os.size(file))
+          val entry : TarArchiveEntry =
+            new TarArchiveEntry(prefix + mapping.toString, if (os.isFile(file)) TarConstants.LF_NORMAL else TarConstants.LF_DIR)
+          if (os.isFile(file)) entry.setSize(os.size(file))
           entry.setUserId(user)
           entry.setGroupId(group)
+          entry.setMode(os.perms(file).value)
           tar.putArchiveEntry(entry)
           if(os.isFile(file)) tar.write(os.read.bytes(file))
-          tar.closeArchiveEntry()
-        } else if (os.isDir(file)) {
-          val entry = new TarArchiveEntry(prefix + mapping.toString, TarConstants.LF_DIR)
-          entry.setUserId(user)
-          entry.setGroupId(group)
-          tar.putArchiveEntry(entry)
           tar.closeArchiveEntry()
         }
       }
