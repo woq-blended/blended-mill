@@ -311,7 +311,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
   /**
    * Create the runnable container by copying all resources into the right place.
    */
-  def container : T [PathRef] = T {
+  def container() : define.Command[PathRef] = T.command {
 
     val ctDir : Path = T.dest
 
@@ -331,6 +331,8 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
 
     os.remove(profileDir / "launch.conf")
 
+    T.log.info(s"Created container in [${ctDir.toIO.getAbsolutePath()}]")
+
     PathRef(ctDir)
   }
 
@@ -341,7 +343,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     val tarGz : Path = T.dest / s"${artifactId()}-${publishVersion()}.tar.gz"
     TarUtil.tar(
       tarGz,
-      Seq(container().path),
+      Seq(container()().path),
       prefix = s"${artifactId()}-${publishVersion()}/",
       includeDirs = true
     )
@@ -356,7 +358,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
 
     val deploy = T.dest / s"${artifactId}-${publishVersion()}.zip"
 
-    val profileDir : Path = container().path / "profiles" / profileName() / profileVersion()
+    val profileDir : Path = container()().path / "profiles" / profileName() / profileVersion()
 
     val includes : Seq[RelPath] = Seq( "profile.conf", "bundles", "resources").map(s => RelPath(s))
 
@@ -469,7 +471,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
       val ctDir : Path = dir / "files" / "container" / appFolder()
       val pDir : Path = dir / "files" / "container" / appFolder() / "profiles" / profileName() / profileVersion()
 
-      os.copy(ctModule.container().path, ctDir, createFolders = true)
+      os.copy(ctModule.container()().path, ctDir, createFolders = true)
 
       dockerExtrafiles.foreach { p =>
         T.log.info(s"Using docker extrafiles from base directory [${p.toIO.getAbsolutePath()}]")
