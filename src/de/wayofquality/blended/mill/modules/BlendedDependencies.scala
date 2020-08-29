@@ -144,7 +144,7 @@ trait BlendedDependencies { deps =>
   def jettyWebapp = jetty("webapp")
   def jettyXml = jetty("xml")
 
-  def jacksonCore = ivy"com.fasterxml.jackson.core:jackson-core:2.9.3".withDottyCompat()
+  def jacksonCore = ivy"com.fasterxml.jackson.core:jackson-core:2.9.3".withDottyCompat(scalaVersion)
   def jacksonBind = ivy"com.fasterxml.jackson.core:jackson-databind:2.9.3"
   def jacksonAnnotations = ivy"com.fasterxml.jackson.core:jackson-annotations:2.9.3"
 
