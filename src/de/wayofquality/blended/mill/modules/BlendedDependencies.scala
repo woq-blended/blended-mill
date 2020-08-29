@@ -144,7 +144,7 @@ trait BlendedDependencies { deps =>
   def jettyWebapp = jetty("webapp")
   def jettyXml = jetty("xml")
 
-  def jacksonCore = ivy"com.fasterxml.jackson.core:jackson-core:2.9.3"
+  def jacksonCore = ivy"com.fasterxml.jackson.core:jackson-core:2.9.3".withDottyCompat()
   def jacksonBind = ivy"com.fasterxml.jackson.core:jackson-databind:2.9.3"
   def jacksonAnnotations = ivy"com.fasterxml.jackson.core:jackson-annotations:2.9.3"
 
@@ -201,6 +201,7 @@ trait BlendedDependencies { deps =>
 
   def scalacheck = ivy"org.scalacheck::scalacheck:1.14.3"
   def scalatest = ivy"org.scalatest::scalatest:${scalatestVersion}"
+  def scalatestCore = ivy"org.scalatest::scalatest-core:${scalatestVersion}"
   def scalactic = ivy"org.scalactic::scalactic:${scalatestVersion}"
   def scalatestplusScalacheck = ivy"org.scalatestplus::scalacheck-1-14:3.1.1.1"
   def scalatestplusMockito = ivy"org.scalatestplus::mockito-1-10:3.1.0.0"

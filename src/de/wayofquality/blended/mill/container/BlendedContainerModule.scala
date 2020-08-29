@@ -432,7 +432,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     /**
      * The base image that shall be used for the generated docker image.
      */
-    def baseImage : String = "blended/zulu-8-alpine:1.0.1"
+    def baseImage : T[String] = T { "blended/zulu-8-alpine:1.0.1" }
 
     /**
      * The ports exposed from the docker image
@@ -455,6 +455,14 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     def dockerImage : T[String]
 
     /**
+      * Whether to include the container binaries in the docker image. This is true by default. 
+      * If multiple docker files shall be built with just config differences, a base image can be 
+      * defined with just the container binaries and from there the other images with just the config 
+      * files. 
+      */
+    def includeContainerFiles : Boolean = true
+
+    /**
      * The docker extra files are files that will be copied into either the container
      * directory (blended.home) or the profile directory (profile.home).
      * These files will override or complement the files that are coming from the container build.
@@ -471,7 +479,11 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
       val ctDir : Path = dir / "files" / "container" / appFolder()
       val pDir : Path = dir / "files" / "container" / appFolder() / "profiles" / profileName() / profileVersion()
 
-      os.copy(ctModule.container()().path, ctDir, createFolders = true)
+      os.makeDir.all(pDir)
+
+      if (includeContainerFiles) {
+        CopyHelper.copyOver(ctModule.container()().path, ctDir)
+      }
 
       dockerExtrafiles.foreach { p =>
         T.log.info(s"Using docker extrafiles from base directory [${p.toIO.getAbsolutePath()}]")
@@ -480,7 +492,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
       }
 
       val content : String =
-        s"""FROM $baseImage
+        s"""FROM ${baseImage()}
            |LABEL maintainer="$maintainer"
            |LABEL version="${ctModule.profileVersion()}"
            |ADD --chown=$appUser:$appUser files/container /opt
