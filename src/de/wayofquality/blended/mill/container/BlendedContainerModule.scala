@@ -424,6 +424,13 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
    */
   trait Docker extends Module {
 
+    def dockerRepo = T.input {
+      T.env.get("DOCKER_REPO") match {
+        case Some(k) => Some(k)
+        case None => None
+      }
+    }
+
     /**
      * The maintainer as it should appear in the docker file.
      */
@@ -455,10 +462,10 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     def dockerImage : T[String]
 
     /**
-      * Whether to include the container binaries in the docker image. This is true by default. 
-      * If multiple docker files shall be built with just config differences, a base image can be 
-      * defined with just the container binaries and from there the other images with just the config 
-      * files. 
+      * Whether to include the container binaries in the docker image. This is true by default.
+      * If multiple docker files shall be built with just config differences, a base image can be
+      * defined with just the container binaries and from there the other images with just the config
+      * files.
       */
     def includeContainerFiles : Boolean = true
 
@@ -514,6 +521,27 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
 
       process.join()
       process.exitCode()
+    }
+
+    def dockerpush() = T.command {
+      dockerRepo() match {
+        case None => 0
+        case Some(repo) =>
+
+          dockerbuild()()
+
+          val p1 = Jvm.spawnSubprocess(commandArgs = Seq(
+            "docker", "tag", dockerImage(), s"$repo/${dockerImage()}"
+          ), envArgs = Map.empty, workingDir = dockerconfig().path)
+          p1.join()
+
+          val p2 = Jvm.spawnSubprocess(commandArgs = Seq(
+            "docker", "push", s"$repo/${dockerImage()}"
+          ), envArgs = Map.empty, workingDir = dockerconfig().path)
+          p2.join()
+
+          p2.exitCode()
+      }
     }
   }
 }
