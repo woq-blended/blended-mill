@@ -107,7 +107,7 @@ trait PluginModule extends ScalaModule with BlendedPublishModule {
 }
 
 object blended extends Module {
-  object build extends PluginModule {
+  object mill extends PluginModule {
 
     override def scalaVersion = T { "2.13.2" }
     override def millSourcePath : os.Path = baseDir
