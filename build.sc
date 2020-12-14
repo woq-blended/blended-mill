@@ -1,5 +1,4 @@
-//import $ivy.`com.lihaoyi::mill-contrib-bsp:$MILL_VERSION`
-import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest:0.3.3`
+import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest_mill0.9:0.4.0`
 
 import de.tobiasroeser.mill.integrationtest._
 
@@ -27,14 +26,14 @@ trait Deps {
   def millScoverage = ivy"com.lihaoyi::mill-contrib-scoverage:${millVersion}"
   def millScalafix = ivy"com.goyeau::mill-scalafix:${scalafixVersion}"
 
-  def millOsgi = ivy"de.tototec::de.tobiasroeser.mill.osgi:$millOsgiVersion"
+  def millOsgi = ivy"de.tototec::de.tobiasroeser.mill.osgi_mill0.9:$millOsgiVersion"
 
   def commonsCompress = ivy"org.apache.commons:commons-compress:1.13"
 }
 
 object Deps_0_7 extends Deps {
   override def millVersion = "0.7.4"
-  override def millOsgiVersion = "0.3.0"
+  override def millOsgiVersion = "0.3.2"
 
   override def scalafixVersion: String = "0.1.1"
 }
@@ -108,9 +107,9 @@ trait PluginModule extends ScalaModule with BlendedPublishModule {
 }
 
 object blended extends Module {
-  object mill extends PluginModule {
+  object build extends PluginModule {
 
-    override def scalaVersion : T[String] = "2.13.2"
+    override def scalaVersion = T { "2.13.2" }
     override def millSourcePath : os.Path = baseDir
 
     val deps = Deps_0_7
@@ -128,6 +127,6 @@ object blended extends Module {
 }
 
 object itest extends MillIntegrationTestModule {
-  override def millTestVersion = "0.7.4"
-  override def pluginsUnderTest = Seq(blended.mill)
+  override def millTestVersion = "0.9.3"
+  override def pluginsUnderTest = Seq(blended.build)
 }
