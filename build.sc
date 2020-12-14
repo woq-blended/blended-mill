@@ -22,7 +22,7 @@ trait Deps {
 //  def millScoverage = ivy"com.lihaoyi::mill-contrib-scoverage:${millVersion}"
 //  def millScalafix = ivy"com.goyeau::mill-scalafix:${scalafixVersion}"
 
-  def millOsgi = ivy"de.tototec::de.tobiasroeser.mill.osgi_mill0.9.3:$millOsgiVersion"
+  def millOsgi = ivy"de.tototec::de.tobiasroeser.mill.osgi_mill0.9:$millOsgiVersion"
 
   def commonsCompress = ivy"org.apache.commons:commons-compress:1.13"
 }
