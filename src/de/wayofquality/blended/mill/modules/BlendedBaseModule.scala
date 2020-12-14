@@ -40,6 +40,7 @@ trait BlendedBaseModule
     "--target:8",
     "-Werror",
     "--feature",
+    "-language:"
     Seq(
       "adapted-args",
       "constant",
@@ -116,7 +117,7 @@ trait BlendedBaseModule
     override def recursiveModuleDeps: Seq[JavaModule] = super.recursiveModuleDeps.map(mapToScoverageModule)
     override def transitiveLocalClasspath: T[Loose.Agg[PathRef]] = T { T.traverse(recursiveModuleDeps)(m => m.jar)() }
     override def ivyDeps = T{ super.ivyDeps() ++ Agg(
-      deps.scalatest, 
+      deps.scalatest,
       deps.scalactic
     )}
     override def testFrameworks = Seq("org.scalatest.tools.Framework")

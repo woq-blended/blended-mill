@@ -1,8 +1,3 @@
-//import $ivy.`com.lihaoyi::mill-contrib-bsp:$MILL_VERSION`
-import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest:0.3.3`
-
-import de.tobiasroeser.mill.integrationtest._
-
 import mill._
 import mill.define.Target
 import mill.scalalib._
@@ -24,17 +19,17 @@ trait Deps {
   def millMain = ivy"com.lihaoyi::mill-main:${millVersion}"
   def millScalalib = ivy"com.lihaoyi::mill-scalalib:${millVersion}"
   def millScalaJsLib = ivy"com.lihaoyi::mill-scalajslib:${millVersion}"
-  def millScoverage = ivy"com.lihaoyi::mill-contrib-scoverage:${millVersion}"
-  def millScalafix = ivy"com.goyeau::mill-scalafix:${scalafixVersion}"
+//  def millScoverage = ivy"com.lihaoyi::mill-contrib-scoverage:${millVersion}"
+//  def millScalafix = ivy"com.goyeau::mill-scalafix:${scalafixVersion}"
 
-  def millOsgi = ivy"de.tototec::de.tobiasroeser.mill.osgi:$millOsgiVersion"
+  def millOsgi = ivy"de.tototec::de.tobiasroeser.mill.osgi_mill0.9.3:$millOsgiVersion"
 
   def commonsCompress = ivy"org.apache.commons:commons-compress:1.13"
 }
 
-object Deps_0_7 extends Deps {
-  override def millVersion = "0.7.4"
-  override def millOsgiVersion = "0.3.0"
+object Deps_0_9 extends Deps {
+  override def millVersion = "0.9.3"
+  override def millOsgiVersion = "0.3.2"
 
   override def scalafixVersion: String = "0.1.1"
 }
@@ -110,24 +105,18 @@ trait PluginModule extends ScalaModule with BlendedPublishModule {
 object blended extends Module {
   object mill extends PluginModule {
 
-    override def scalaVersion : T[String] = "2.13.2"
-    override def millSourcePath : os.Path = baseDir
+    override def scalaVersion() = T { "2.13.4" }
+    override def millSourcePath = baseDir
 
-    val deps = Deps_0_7
+    val deps = Deps_0_9
 
-    override def ivyDeps = T { super.ivyDeps() ++ Agg(
+    override def ivyDeps() = T { super.ivyDeps() ++ Agg(
       deps.commonsCompress,
       deps.millMain,
       deps.millScalalib,
       deps.millScalaJsLib,
-      deps.millScoverage,
-      deps.millScalafix,
       deps.millOsgi
     )}
   }
 }
 
-object itest extends MillIntegrationTestModule {
-  override def millTestVersion = "0.7.4"
-  override def pluginsUnderTest = Seq(blended.mill)
-}

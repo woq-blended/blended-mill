@@ -9,7 +9,7 @@ trait BlendedDependencies { deps =>
   def blendedOrg : String = "de.wayofquality.blended"
 
   // Versions
-  def activeMqVersion = "5.15.6"
+  def activeMqVersion = "5.15.12"
 
   def akkaVersion = "2.6.6"
   def akkaHttpVersion = "10.1.12"
