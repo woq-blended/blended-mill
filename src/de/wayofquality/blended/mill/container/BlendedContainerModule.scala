@@ -439,7 +439,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     /**
      * The base image that shall be used for the generated docker image.
      */
-    def baseImage : T[String] = T { "blended/zulu-8-alpine:1.0.1" }
+    def baseImage : T[String] = T { "blended/zulu-8-alpine:1.0.2" }
 
     /**
      * The ports exposed from the docker image
@@ -502,7 +502,8 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
         s"""FROM ${baseImage()}
            |LABEL maintainer="$maintainer"
            |LABEL version="${ctModule.profileVersion()}"
-           |ADD --chown=$appUser:$appUser files/container /opt
+           |RUN if [ ! -d /opt/${appFolder()} ]; then mkdir /opt/${appFolder()}; fi && chgrp -R 0 /opt/${appFolder()} && chmod -R g+srwX /opt/${appFolder()}
+           |ADD --chown=$appUser:root files/container /opt
            |USER $appUser
            |ENV JAVA_HOME /opt/java
            |ENV PATH $${PATH}:$${JAVA_HOME}/bin
