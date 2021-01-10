@@ -1,7 +1,3 @@
-import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest_mill0.9:0.4.0`
-
-import de.tobiasroeser.mill.integrationtest._
-
 import mill._
 import mill.define.Target
 import mill.scalalib._
@@ -31,8 +27,8 @@ trait Deps {
   def commonsCompress = ivy"org.apache.commons:commons-compress:1.13"
 }
 
-object Deps_0_7 extends Deps {
-  override def millVersion = "0.7.4"
+object Deps_0_9 extends Deps {
+  override def millVersion = "0.9.3"
   override def millOsgiVersion = "0.3.2"
 
   override def scalafixVersion: String = "0.1.1"
@@ -109,10 +105,10 @@ trait PluginModule extends ScalaModule with BlendedPublishModule {
 object blended extends Module {
   object build extends PluginModule {
 
-    override def scalaVersion = T { "2.13.2" }
+    override def scalaVersion = T { "2.13.4" }
     override def millSourcePath : os.Path = baseDir
 
-    val deps = Deps_0_7
+    val deps = Deps_0_9
 
     override def ivyDeps = T { super.ivyDeps() ++ Agg(
       deps.commonsCompress,
@@ -126,7 +122,3 @@ object blended extends Module {
   }
 }
 
-object itest extends MillIntegrationTestModule {
-  override def millTestVersion = "0.9.3"
-  override def pluginsUnderTest = Seq(blended.build)
-}
