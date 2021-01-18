@@ -439,7 +439,7 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
     /**
      * The base image that shall be used for the generated docker image.
      */
-    def baseImage : T[String] = T { "blended/zulu-8-alpine:1.0.2" }
+    def baseImage : T[String] = T { "blended/zulu-alpine:1.8.275" }
 
     /**
      * The ports exposed from the docker image
