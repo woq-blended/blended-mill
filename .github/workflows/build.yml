@@ -9,7 +9,7 @@ env:
   MAIN_JAVA_VERSION: 1.8
   # We will only publish the build artifacts to our pseudo snapshot repo for a push on
   # this branch
-  PUBLISH_BRANCH: refs/heads/main
+  PUBLISH_BRANCH: refs/heads/mill-0.7
 
 jobs:
   build:
