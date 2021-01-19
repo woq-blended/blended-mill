@@ -506,8 +506,9 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
            |ADD files/container /opt
            |ENV JAVA_HOME /opt/java
            |ENV PATH $${PATH}:$${JAVA_HOME}/bin
+           |ENTRYPOINT [ "/usr/local/bin/uid.sh" ]
            |USER 10101
-           |ENTRYPOINT ["/bin/sh", "/opt/${appFolder()}/bin/blended.sh"]
+           |CMD ["/bin/sh", "/opt/${appFolder()}/bin/blended.sh"]
            |""".stripMargin ++ exposedPorts.map(p => s"EXPOSE $p").mkString("\n", "\n", "\n")
 
       os.write(dir / "Dockerfile", content)
