@@ -4,7 +4,7 @@ import com.goyeau.mill.scalafix.ScalafixModule
 import mill.{Agg, PathRef, T}
 import mill.api.{Loose, Result}
 import mill.define.{Command, Sources, Target}
-import mill.scalalib.{Dep, JavaModule, Lib, SbtModule, TestRunner}
+import mill.scalalib._
 import mill.scalalib.api.CompilationResult
 import sbt.testing.{Fingerprint, Framework}
 import mill.contrib.scoverage.ScoverageModule
@@ -35,6 +35,9 @@ trait BlendedBaseModule
     PathRef(millSourcePath / "src" / "main" / "binaryResources")
   )}
 
+  override def scalacPluginIvyDeps: Target[Loose.Agg[Dep]] =
+    super.scalacPluginIvyDeps() ++ Agg(ivy"org.scalameta:::semanticdb-scalac:4.4.7")
+
   override def scalacOptions = Seq(
     "--deprecation",
     "--target:8",
@@ -48,7 +51,6 @@ trait BlendedBaseModule
       "inaccessible",
       "infer-any",
       "missing-interpolator",
-      "nullary-override",
       "nullary-unit",
       "option-implicit",
       "poly-implicit-overload",
@@ -58,10 +60,6 @@ trait BlendedBaseModule
       "unused",
     ).mkString("-Xlint:", ",", ""),
     //    "--unchecked"
-  )
-
-  override def javacOptions = Seq(
-    "-Xlint:unchecked"
   )
 
   override def scalaDocOptions: Target[Seq[String]] = T {
