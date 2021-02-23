@@ -141,7 +141,7 @@ trait BlendedDependencies { deps =>
   def jettyServlet = jetty("servlet")
   def jettyServer = jetty("server")
   def jettyUtil = jetty("util")
-  def jettyUtilAjax = jetty("autil-ajax")
+  def jettyUtilAjax = jetty("util-ajax")
   def jettyWebapp = jetty("webapp")
   def jettyXml = jetty("xml")
 
