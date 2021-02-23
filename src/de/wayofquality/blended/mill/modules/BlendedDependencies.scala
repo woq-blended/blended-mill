@@ -15,13 +15,13 @@ trait BlendedDependencies { deps =>
   def akkaHttpVersion = "10.1.12"
 
   def dominoVersion = "1.1.5"
-  def jettyVersion = "9.4.28.v20200408"
+  def jettyVersion = "9.4.36.v20210114"
   def jolokiaVersion = "1.6.2"
   def microJsonVersion = "1.6"
   def parboiledVersion = "1.1.6"
   def prickleVersion = "1.1.16"
   def scalaJsVersion = "1.1.0"
-  def scalaVersion = "2.13.2"
+  def scalaVersion = "2.13.4"
   def scalaBinVersion(scalaVersion: String) = scalaVersion.split("[.]").take(2).mkString(".")
   def scalatestVersion = "3.2.0"
   def scoverageVersion = "1.4.1"
@@ -141,6 +141,7 @@ trait BlendedDependencies { deps =>
   def jettyServlet = jetty("servlet")
   def jettyServer = jetty("server")
   def jettyUtil = jetty("util")
+  def jettyUtilAjax = jetty("autil-ajax")
   def jettyWebapp = jetty("webapp")
   def jettyXml = jetty("xml")
 

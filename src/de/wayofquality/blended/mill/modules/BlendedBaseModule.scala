@@ -1,6 +1,5 @@
 package de.wayofquality.blended.mill.modules
 
-import com.goyeau.mill.scalafix.ScalafixModule
 import mill.{Agg, PathRef, T}
 import mill.api.{Loose, Result}
 import mill.define.{Command, Sources, Target}
@@ -13,8 +12,7 @@ import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 
 trait BlendedBaseModule
   extends SbtModule
-  with ScoverageModule
-  with ScalafixModule { blendedModuleBase =>
+  with ScoverageModule { blendedModuleBase =>
 
   type ProjectDeps <: BlendedDependencies
   def deps : ProjectDeps
@@ -48,7 +46,6 @@ trait BlendedBaseModule
       "inaccessible",
       "infer-any",
       "missing-interpolator",
-      "nullary-override",
       "nullary-unit",
       "option-implicit",
       "poly-implicit-overload",
