@@ -151,8 +151,10 @@ trait BlendedDependencies { deps =>
 
   def javaxMail = ivy"javax.mail:mail:1.4.5"
   def javaxServlet31 = ivy"org.everit.osgi.bundles:org.everit.osgi.bundles.javax.servlet.api:3.1.0"
+  def javaxTransaction = ivy"javax.transaction:javax.transaction-api:1.3"
 
-  def jaxb = ivy"org.glassfish.jaxb:jaxb-runtime:2.3.1"
+  def jaxbApi = ivy"javax.xml.bind:jaxb-api:2.3.1"
+  def jaxbImpl = ivy"org.glassfish.jaxb:jaxb-runtime:2.3.1"
   def jcip = ivy"net.jcip:jcip-annotations:1.0"
   def jclOverSlf4j = ivy"org.slf4j:jcl-over-slf4j:${slf4jVersion}"
   def jettyOsgiBoot = jettyOsgi("osgi-boot")
