@@ -10,13 +10,14 @@ trait BlendedOsgiModule extends OsgiBundleModule { this : BlendedBaseModule with
   override def bundleSymbolicName = T { blendedModule } //+ "_" + scalaBinVersion()}
 
   override def osgiHeaders: T[OsgiHeaders] = T{
-    super.osgiHeaders().copy(
-      `Export-Package` = exportPackages,
+    super.osgiHeaders().copy(  
+    `Export-Package` = exportPackages,
       `Import-Package` =
         // scala compatible binary version control
         Seq(s"""scala.*;version="[${scalaBinVersion()}.0,${scalaBinVersion()}.50]"""") ++
           essentialImportPackage ++
-          Seq("*")
+          Seq("*"),
+      `Require-Capability` = Some("osgi.ee;filter=\"(&(osgi.ee=JavaSE)(|(version=1.8)(version=11)))\"")
     )
   }
 }
