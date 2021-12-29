@@ -502,7 +502,8 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
         s"""FROM ${baseImage()}
            |LABEL maintainer="$maintainer"
            |LABEL version="${ctModule.profileVersion()}"
-           |RUN if [ ! -d /opt/${appFolder()} ]; then mkdir /opt/${appFolder()} && chgrp -R 0 /opt/${appFolder()} && chmod -R g+srwX /opt/${appFolder()} ; fi
+           |RUN if [ ! -d /opt/${appFolder()} ]; then mkdir /opt/${appFolder()} ; fi
+           |RUN chgrp -R 0 /opt/${appFolder()} && chmod -R g+srwX /opt/${appFolder()}
            |ADD files/container /opt
            |ENV JAVA_HOME /opt/java
            |ENV PATH $${PATH}:$${JAVA_HOME}/bin

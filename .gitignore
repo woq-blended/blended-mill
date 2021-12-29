@@ -4,4 +4,5 @@ out/
 .metals/
 .bloop/
 .bsp/
+.coursier/
 
