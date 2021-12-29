@@ -10,12 +10,15 @@ import de.wayofquality.blended.mill.utils.config.CopyHelper
 import de.wayofquality.blended.mill.utils.{FilterUtil, TarUtil, ZipUtil}
 import mill.define.{Command, Sources}
 import mill.modules.Jvm
-import os.{Path, RelPath}
+import os.{Path, RelPath, up}
 
 import scala.util.Try
 import mill.scalalib.publish.PublishInfo
 import de.wayofquality.blended.mill.publish.BlendedPublishModule
 import de.wayofquality.blended.mill.feature.FeatureRef
+
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
 
 /**
  * Define how blended containers are assembled.
@@ -498,12 +501,12 @@ trait BlendedContainerModule extends BlendedBaseModule with BlendedPublishModule
         CopyHelper.copyOver(p / "profile", pDir)
       }
 
+      os.walk(ctDir / up).foreach(p => Files.setPosixFilePermissions(p.toNIO, PosixFilePermissions.fromString("rwxrwxrwx")))
+
       val content : String =
         s"""FROM ${baseImage()}
            |LABEL maintainer="$maintainer"
            |LABEL version="${ctModule.profileVersion()}"
-           |RUN if [ ! -d /opt/${appFolder()} ]; then mkdir /opt/${appFolder()} ; fi
-           |RUN chgrp -R 0 /opt/${appFolder()} && chmod -R g+srwX /opt/${appFolder()}
            |ADD files/container /opt
            |ENV JAVA_HOME /opt/java
            |ENV PATH $${PATH}:$${JAVA_HOME}/bin
