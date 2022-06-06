@@ -11,7 +11,7 @@ trait BlendedFeatureJar extends BlendedBaseModule { jar : PublishModule =>
 
   override def resources = T.sources {
 
-    val dest = T.ctx.dest
+    val dest = T.ctx().dest
     os.makeDir.all(dest / "features")
 
     features().foreach{ f =>

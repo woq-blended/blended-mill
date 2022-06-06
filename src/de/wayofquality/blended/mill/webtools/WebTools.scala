@@ -17,7 +17,7 @@ trait WebTools extends Module {
       workingDir = npmModulesDir
     )
     process.join()
-    T.log.info(new String(process.stdout.bytes))
+    T.log.info(new String(process.stdout.bytes()))
     PathRef(npmModulesDir)
   }
 
