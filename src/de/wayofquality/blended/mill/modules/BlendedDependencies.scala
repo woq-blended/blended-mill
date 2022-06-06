@@ -14,6 +14,7 @@ trait BlendedDependencies { deps =>
   def akkaVersion = "2.6.6"
   def akkaHttpVersion = "10.1.12"
 
+
   def dominoVersion = "1.1.5"
   def jettyVersion = "9.4.36.v20210114"
   def jolokiaVersion = "1.6.2"
@@ -74,6 +75,9 @@ trait BlendedDependencies { deps =>
 
   def asciiRender = ivy"com.indvd00m.ascii.render:ascii-render:1.2.3"
   def asmAll = ivy"org.ow2.asm:asm-all:4.1"
+
+  def awsJavaSDKVersion = "2.17.204"
+  def aws(m:String) = ivy"software.amazon.awssdk:$m:$awsJavaSDKVersion"
 
   def bouncyCastleBcprov = ivy"org.bouncycastle:bcprov-jdk15on:1.60"
   def bouncyCastlePkix = ivy"org.bouncycastle:bcpkix-jdk15on:1.60"
