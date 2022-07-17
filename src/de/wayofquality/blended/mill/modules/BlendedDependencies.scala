@@ -239,7 +239,7 @@ trait BlendedDependencies { deps =>
 
   // libs for splunk support via HEC
   def splunkjava = ivy"com.splunk.logging:splunk-library-javalogging:1.7.3"
-  def httpCore = ivy"org.apache.httpcomponents:httpcore:4.4.9"
+  def httpCore = ivy"org.apache.httpcomponents:httpcore:4.5.5"
   def httpCoreNio = ivy"org.apache.httpcomponents:httpcore:4.4.6"
   def httpComponents = ivy"org.apache.httpcomponents:httpclient:4.5.5"
   def httpAsync = ivy"org.apache.httpcomponents:httpasyncclient:4.1.3"
