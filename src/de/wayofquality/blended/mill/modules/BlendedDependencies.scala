@@ -181,6 +181,7 @@ trait BlendedDependencies { deps =>
   def levelDbJni = ivy"org.fusesource.leveldbjni:leveldbjni-all:1.8"
   def lihaoyiPprint = ivy"com.lihaoyi::pprint:0.5.9"
   def liquibase = ivy"org.liquibase:liquibase-core:3.6.1"
+  def log4j = ivy"log4j:log4j:1.2.17"
   def logbackCore = ivy"ch.qos.logback:logback-core:1.2.3"
   def logbackClassic = ivy"ch.qos.logback:logback-classic:1.2.3"
 
