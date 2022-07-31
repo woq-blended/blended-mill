@@ -9,7 +9,7 @@ trait BlendedDependencies { deps =>
   def blendedOrg : String = "de.wayofquality.blended"
 
   // Versions
-  def activeMqVersion = "5.15.6"
+  def activeMqVersion = "5.17.1"
 
   def akkaVersion = "2.6.6"
   def akkaHttpVersion = "10.1.12"
@@ -26,7 +26,7 @@ trait BlendedDependencies { deps =>
   def scalaBinVersion(scalaVersion: String) = scalaVersion.split("[.]").take(2).mkString(".")
   def scalatestVersion = "3.2.0"
   def scoverageVersion = "1.4.1"
-  def slf4jVersion = "1.7.25"
+  def slf4jVersion = "1.7.36"
   def sprayVersion = "1.3.5"
   def springVersion = "4.3.12.RELEASE_1"
 
