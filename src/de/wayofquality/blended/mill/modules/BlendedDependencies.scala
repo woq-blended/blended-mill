@@ -9,11 +9,10 @@ trait BlendedDependencies { deps =>
   def blendedOrg : String = "de.wayofquality.blended"
 
   // Versions
-  def activeMqVersion = "5.17.1"
+  def activeMqVersion = "5.17.6"
 
   def akkaVersion = "2.6.6"
   def akkaHttpVersion = "10.1.12"
-
 
   def dominoVersion = "1.1.5"
   def jettyVersion = "9.4.36.v20210114"
